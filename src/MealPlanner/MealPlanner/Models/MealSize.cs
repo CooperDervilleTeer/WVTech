@@ -38,6 +38,16 @@ public static class MealSizeExtensions
         _ => throw new ArgumentOutOfRangeException(nameof(size))
     };
 
+    public static int MaxRecipes(this MealSize size) => size switch
+    {
+        MealSize.SmallSnack => 1,
+        MealSize.Small      => 2,
+        MealSize.Average    => 3,
+        MealSize.LargeSnack => 2,
+        MealSize.Large      => 5,
+        _ => throw new ArgumentOutOfRangeException(nameof(size))
+    };
+
     public static bool IsSnack(this MealSize size) =>
         size == MealSize.SmallSnack || size == MealSize.LargeSnack;
 

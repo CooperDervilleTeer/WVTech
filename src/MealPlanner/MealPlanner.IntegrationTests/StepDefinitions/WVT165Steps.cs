@@ -170,7 +170,11 @@ public class WVT165Steps
             .ExecuteScript("return document.readyState").ToString() == "complete");
 
         var searchBox = _wait.Until(d => d.FindElement(By.Id("searchText")));
-        searchBox.SendKeys(RecipeName);
+
+        // Set value and fire via jQuery's trigger so the registered .on("input") handler reliably fires
+        ((IJavaScriptExecutor)_driver).ExecuteScript(
+            "$(arguments[0]).val(arguments[1]).trigger('input');",
+            searchBox, RecipeName);
 
         _wait.Until(d => d.FindElements(By.CssSelector(".recipeSearchRow")).Count > 0);
 
@@ -180,6 +184,14 @@ public class WVT165Steps
         Assert.That(result, Is.Not.Null, $"Recipe '{RecipeName}' not found in search results");
         ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView({block:'center'});", result);
         ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", result);
+
+        // Multi-select: clicking a row toggles selection; commit via the "Add selected" button
+        var addBtn = _wait.Until(d =>
+        {
+            var btn = d.FindElement(By.Id("addSelectedRecipesBtn"));
+            return btn.Displayed ? btn : null;
+        });
+        addBtn.Click();
 
         _wait.Until(d => d.FindElements(By.CssSelector("#createMealList .delete-recipe-btn")).Count > 0);
     }
@@ -238,15 +250,33 @@ public class WVT165Steps
     [When("'Frank' clicks cancel on the in-app confirmation")]
     public void WhenFrankClicksCancelOnConfirmation()
     {
-        var cancelBtn = _wait.Until(d => d.FindElement(By.CssSelector(".inline-confirm-no")));
-        cancelBtn.Click();
+        var cancelBtn = _wait.Until(d => {
+            try
+            {
+                var el = d.FindElement(By.CssSelector(".inline-confirm-no"));
+                return el.Displayed && el.Enabled ? el : null;
+            }
+            catch (NoSuchElementException) { return null; }
+        });
+        ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView({block:'center',behavior:'instant'});", cancelBtn);
+        try { cancelBtn.Click(); }
+        catch (ElementClickInterceptedException) { ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", cancelBtn); }
     }
 
     [When("'Frank' clicks confirm on the in-app confirmation")]
     public void WhenFrankClicksConfirmOnConfirmation()
     {
-        var confirmBtn = _wait.Until(d => d.FindElement(By.CssSelector(".inline-confirm-yes")));
-        confirmBtn.Click();
+        var confirmBtn = _wait.Until(d => {
+            try
+            {
+                var el = d.FindElement(By.CssSelector(".inline-confirm-yes"));
+                return el.Displayed && el.Enabled ? el : null;
+            }
+            catch (NoSuchElementException) { return null; }
+        });
+        ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView({block:'center',behavior:'instant'});", confirmBtn);
+        try { confirmBtn.Click(); }
+        catch (ElementClickInterceptedException) { ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", confirmBtn); }
         _wait.Until(d => ((IJavaScriptExecutor)d)
             .ExecuteScript("return document.readyState").ToString() == "complete");
     }

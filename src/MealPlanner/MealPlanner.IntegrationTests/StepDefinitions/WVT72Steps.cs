@@ -9,11 +9,22 @@ public class WVT72Steps
 {
     private readonly IWebDriver _driver;
     private readonly string _baseUrl;
+    private readonly ScenarioContext _scenarioContext;
 
-    public WVT72Steps()
+    public WVT72Steps(ScenarioContext scenarioContext)
     {
         _driver = BDDSetup.Driver;
         _baseUrl = AUTHost.BaseUrl;
+        _scenarioContext = scenarioContext;
+    }
+
+    private void EnsureOnEditMealPage()
+    {
+        if (_driver.Url.Contains("/EditMeal", StringComparison.OrdinalIgnoreCase)) return;
+        var mealId = (int)_scenarioContext["MealId"];
+        _driver.Navigate().GoToUrl($"{_baseUrl}/Meal/EditMeal?id={mealId}");
+        new WebDriverWait(_driver, TimeSpan.FromSeconds(10)).Until(d =>
+            ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").ToString() == "complete");
     }
 
     [When("'Jack' selects meal day {string}")]
@@ -38,6 +49,7 @@ public class WVT72Steps
     [Then("the meal repeat rule is saved as weekly")]
     public void ThenTheMealRepeatRuleIsSavedAsWeekly()
     {
+        EnsureOnEditMealPage();
         bool? isSelected = null;
         new WebDriverWait(_driver, TimeSpan.FromSeconds(5))
             .Until(d =>
@@ -67,6 +79,7 @@ public class WVT72Steps
     [Then("the meal month field is saved as {string}")]
     public void ThenTheMealMonthFieldIsSavedAs(string expectedMonth)
     {
+        EnsureOnEditMealPage();
         string? selectedText = null;
         new WebDriverWait(_driver, TimeSpan.FromSeconds(5))
             .Until(d =>
@@ -86,6 +99,7 @@ public class WVT72Steps
     [Then("the meal day field is saved as {string}")]
     public void ThenTheMealDayFieldIsSavedAs(string expectedDay)
     {
+        EnsureOnEditMealPage();
         string? selectedText = null;
         new WebDriverWait(_driver, TimeSpan.FromSeconds(5))
             .Until(d =>

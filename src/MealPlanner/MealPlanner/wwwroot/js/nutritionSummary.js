@@ -84,7 +84,7 @@ function barColor(checkedCount, calories, dayStr) {
     const future = dt > todayMidnight();
     if (future) return 'rgba(160,160,160,0.15)';
     if (checkedCount === 0) return 'rgba(160,160,160,0.2)';
-    if (calories < dailyTargets.calories * 0.70) return '#E24B4A';
+    if (calories > dailyTargets.calories) return '#E24B4A';
     return MACRO_COLORS.calories;
 }
 
@@ -175,13 +175,23 @@ function dayIndicator(checkedCount, calories, goal) {
             tooltip: 'No meals logged',
         };
     }
-    if (calories < goal * 0.70) {
+    if (calories > goal) {
         return {
             state:   'red',
             icon:    'ti ti-x',
             color:   '#E24B4A',
             bg:      'rgba(226,75,74,0.1)',
             border:  'rgba(226,75,74,0.3)',
+            tooltip: `${Math.round(calories)} / ${goal} kcal — over goal`,
+        };
+    }
+    if (calories < goal * 0.70) {
+        return {
+            state:   'yellow',
+            icon:    'ti ti-x',
+            color:   '#D97706',
+            bg:      'rgba(217,119,6,0.1)',
+            border:  'rgba(217,119,6,0.3)',
             tooltip: `${Math.round(calories)} / ${goal} kcal — below 70% goal`,
         };
     }

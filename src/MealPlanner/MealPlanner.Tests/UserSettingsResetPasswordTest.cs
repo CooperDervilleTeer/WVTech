@@ -26,7 +26,7 @@ namespace MealPlanner.Tests
             _mockUserSettingsService = new Mock<IUserSettingsService>();
             var userManagerMock = new Mock<UserManager<User>>(
                 Mock.Of<IUserStore<User>>(), null!, null!, null!, null!, null!, null!, null!, null!);
-            _controller = new UserSettingsController(null!, null!, _mockUserSettingsService.Object, new Mock<ITagRepository>().Object, new Mock<IUserFoodPreferenceRepository>().Object, new Mock<IUserNutritionPreferenceRepository>().Object, new Mock<IUserDietaryRestrictionRepository>().Object, userManagerMock.Object);
+            _controller = new UserSettingsController(null!, _mockUserSettingsService.Object, new Mock<ITagRepository>().Object, new Mock<IUserFoodPreferenceRepository>().Object, new Mock<IUserNutritionPreferenceRepository>().Object, new Mock<IUserDietaryRestrictionRepository>().Object, userManagerMock.Object);
 
             // Add a fake authenticated user for the controller
             var user = new ClaimsPrincipal(new ClaimsIdentity(

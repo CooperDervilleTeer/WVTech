@@ -216,6 +216,26 @@ namespace Mealplanner.IntegrationTests
                 .ExecuteScript("window.alert = function(msg) { window._alertMessage = msg; }; window._alertMessage = null;");
             ((IJavaScriptExecutor)_driver)
                 .ExecuteScript("arguments[0].click();", firstResult);
+
+            // On the create meal page recipes are multi-select pending until committed.
+            // If the click selected a recipe (not a duplicate alert), commit it so subsequent
+            // steps can find it in #createMealList. Use a short timeout so duplicate-click
+            // scenarios (where no row gets selected and the button stays hidden) don't stall.
+            var page = _scenarioContext.ContainsKey("CurrentPage") ? _scenarioContext["CurrentPage"]?.ToString() : "";
+            if (page == "CreateMeal")
+            {
+                try
+                {
+                    var addBtn = new WebDriverWait(_driver, TimeSpan.FromSeconds(2)).Until(d =>
+                    {
+                        var btn = d.FindElement(By.Id("addSelectedRecipesBtn"));
+                        return btn.Displayed ? btn : null;
+                    });
+                    addBtn?.Click();
+                    _wait.Until(d => d.FindElements(By.CssSelector("#createMealList .delete-recipe-btn")).Count > 0);
+                }
+                catch (WebDriverTimeoutException) { }
+            }
         }
     }
 }

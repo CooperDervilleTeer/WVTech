@@ -176,12 +176,17 @@ document.querySelectorAll('[data-action="submit-regenerate"]').forEach(btn => {
             if (recipeList) {
                 recipeList.innerHTML = data.recipes.length === 0
                     ? '<p class="text-muted mb-0">No recipes in this meal.</p>'
-                    : data.recipes.map(r => `
-                        <div class="mealRecipeItem d-flex align-items-center justify-content-between back2 back2-textbox mb-1"
-                             style="cursor:pointer; margin-top:8px;"
-                             onclick="location.href='/FoodEntries/Recipes/${r.id}'">
+                    : data.recipes.map((r, _i, arr) => `
+                        <div class="mealRecipeItem dps-recipe-row"
+                             style="cursor:pointer;"
+                             data-recipe-id="${r.id}"
+                             data-meal-id="${mealId}"
+                             data-recipe-url="/FoodEntries/Recipes/${r.id}">
                             <h4 class="mb-0 flex-grow-1">${r.name}</h4>
-                            <span class="ms-2 text-nowrap">${r.calories} cal</span>
+                            <div class="d-flex gap-2 align-items-center">
+                                <span class="ms-2 text-nowrap">${r.calories} cal</span>
+                                ${arr.length > 1 ? `<button type="button" class="dps-refresh-btn" data-action="regenerate-recipe" data-recipe-id="${r.id}" data-meal-id="${mealId}" title="Regenerate this recipe"><i class="ti ti-refresh"></i></button>` : ''}
+                            </div>
                         </div>`).join('');
             }
 

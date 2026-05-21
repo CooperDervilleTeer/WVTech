@@ -17,6 +17,11 @@ public class EdamamRecipe
     public string? Image { get; set; }
     public IList<EdamamIngredient>? Ingredients { get; set; }
     public IDictionary<string, EdamamNutrient>? TotalNutrients { get; set; }
+    public IList<string>? DietLabels { get; set; }
+    public IList<string>? HealthLabels { get; set; }
+    public IList<string>? CuisineType { get; set; }
+    public IList<string>? MealType { get; set; }
+    public IList<string>? DishType { get; set; }
 }
 
 public class EdamamIngredient

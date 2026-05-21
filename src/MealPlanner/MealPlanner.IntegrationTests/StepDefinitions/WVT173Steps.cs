@@ -23,7 +23,7 @@ public class WVT173Steps
     [When("'Gary' navigates to the user settings page")]
     public void GivenGaryNavigatesToUserSettingsPage()
     {
-        _driver.Navigate().GoToUrl($"{_baseUrl}/UserSettings");
+        _driver.Navigate().GoToUrl($"{_baseUrl}/UserSettings?section=food");
         _wait.Until(d => ((IJavaScriptExecutor)d)
             .ExecuteScript("return document.readyState").ToString() == "complete");
     }

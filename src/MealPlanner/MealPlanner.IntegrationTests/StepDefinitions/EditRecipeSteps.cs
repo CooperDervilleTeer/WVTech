@@ -93,7 +93,7 @@ public class EditRecipeSteps
             {
                 new WebDriverWait(_driver, TimeSpan.FromSeconds(5)).Until(driver =>
                 {
-                    try { return driver.FindElement(By.Id("Directions")).Displayed; }
+                    try { return driver.FindElement(By.Id("step-input")).Displayed; }
                     catch (NoSuchElementException) { return false; }
                     catch (StaleElementReferenceException) { return false; }
                 });
@@ -116,8 +116,8 @@ public class EditRecipeSteps
     [Then("the recipe directions field contains {string}")]
     public void ThenRecipeDirectionsFieldContains(string expected)
     {
-        var field = _driver.FindElement(By.Id("Directions"));
-        Assert.That(field.Text, Is.EqualTo(expected));
+        var firstStep = _driver.FindElement(By.CssSelector("#step-list .ar-step-text"));
+        Assert.That(firstStep.Text, Is.EqualTo(expected));
     }
 
     [Then("the recipe calories field contains {string}")]
@@ -158,8 +158,9 @@ public class EditRecipeSteps
     [Given("{string} clears the recipe directions")]
     public void GivenUserClearsRecipeDirections(string username)
     {
-        var field = _driver.FindElement(By.Id("Directions"));
-        field.Clear();
+        var removeBtns = _driver.FindElements(By.CssSelector("#step-list .ar-step-remove-btn")).ToList();
+        foreach (var btn in removeBtns)
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", btn);
     }
 
     [Given("{string} clears the recipe calories")]

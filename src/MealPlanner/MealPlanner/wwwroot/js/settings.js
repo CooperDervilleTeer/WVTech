@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Section switching ─────────────────────────────────────
     let currentSection = document.body.dataset.activeSection || 'profile';
-    const sectionsWithSave = new Set(['nutrition', 'food']);
 
     function activateSection(section) {
         document.querySelectorAll('.settings-panel').forEach(p => {
@@ -11,8 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.settings-nav-item[data-section]').forEach(item => {
             item.classList.toggle('active', item.dataset.section === section);
         });
-        const saveBtn = document.getElementById('food-pref-save-btn');
-        if (saveBtn) saveBtn.style.display = sectionsWithSave.has(section) ? '' : 'none';
         currentSection = section;
     }
 
@@ -21,15 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.settings-nav-item[data-section]').forEach(item => {
         item.addEventListener('click', () => activateSection(item.dataset.section));
     });
-
-    // ── Save button ───────────────────────────────────────────
-    const saveBtn = document.getElementById('food-pref-save-btn');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', function () {
-            const form = document.getElementById('form-' + currentSection);
-            if (form) form.requestSubmit();
-        });
-    }
 
     // ── Dietary restriction chips (auto-save) ────────────────
     const selectedRestrictions = new Set(); // stores integer DietaryRestrictionId values

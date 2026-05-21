@@ -2,10 +2,13 @@ const API_ROUTE = "/api/recipe/";
 
 window.activeTagFilters = [];
 
+const pendingRecipeIds = new Set();
+
 $(document).ready(() => {
     $(document).on("click", ".recipeSearchRow", toggleRecipe);
     $(document).on("click", ".nm-recipe-remove-btn", removeSelectedRecipe);
-    initTagFilterDropdown();
+    $(document).on("click", "#addSelectedRecipesBtn", commitSelectedRecipes);
+    initTagFilterChips();
 });
 
 function updateSelectedCard() {
@@ -34,16 +37,49 @@ async function toggleRecipe() {
 
     if (!recipeId) return;
 
-    if ($(`#createMealList .nm-recipe-row[data-id="${recipeId}"]`).length > 0) {
-        alert("This recipe is already in the meal.");
+    // Deselect if already pending
+    if ($row.hasClass("selected")) {
+        $row.removeClass("selected");
+        pendingRecipeIds.delete(recipeId);
+        updateAddSelectedBtn();
         return;
     }
 
-    // Select: add hidden input and card row
+    // Alert if already committed or pending
+    if ($(`#createMealList .nm-recipe-row[data-id="${recipeId}"]`).length > 0 || pendingRecipeIds.has(recipeId)) {
+        alert("This recipe is already in the meal");
+        return;
+    }
+
+    pendingRecipeIds.add(recipeId);
     $row.addClass("selected");
-    const $hidden = $(`<input type="hidden" name="RecipeIds" value="${recipeId}" />`);
-    $("#createMealForm").append($hidden);
-    addToSelectedCard(recipeId, recipeName);
+    updateAddSelectedBtn();
+}
+
+function updateAddSelectedBtn() {
+    const count = $(".recipeSearchRow.selected").length;
+    const $btn = $("#addSelectedRecipesBtn");
+    if (count > 0) {
+        $btn.show().text(`Add ${count} recipe${count === 1 ? "" : "s"}`);
+    } else {
+        $btn.hide();
+    }
+}
+
+function commitSelectedRecipes() {
+    $(".recipeSearchRow.selected").each(function () {
+        const $row = $(this);
+        const recipeId = Number($(".recipeId", $row).text());
+        const recipeName = $(".recipeName", $row).text();
+        if (!recipeId) return;
+        if ($(`#createMealList .nm-recipe-row[data-id="${recipeId}"]`).length > 0) return;
+        pendingRecipeIds.delete(recipeId);
+        $("#createMealForm").append(`<input type="hidden" name="RecipeIds" value="${recipeId}" />`);
+        addToSelectedCard(recipeId, recipeName);
+    });
+    $(".recipeSearchRow").removeClass("selected");
+    pendingRecipeIds.clear();
+    updateAddSelectedBtn();
     updateSelectedCard();
 }
 
@@ -58,20 +94,10 @@ function removeSelectedRecipe() {
     const recipeId = $(this).data("id");
     const $btn = $(this);
 
-    if (typeof showDeleteModal === "function") {
-        showDeleteModal("Remove this recipe?", function () {
-            $btn.closest(".nm-recipe-row").remove();
-            $(`#createMealForm input[name="RecipeIds"][value="${recipeId}"]`).remove();
-            $(`.recipeSearchRow`).each(function () {
-                if (Number($(".recipeId", this).text()) === recipeId) {
-                    $(this).removeClass("selected");
-                }
-            });
-            updateSelectedCard();
-        });
-    } else {
+    function doRemove() {
         $btn.closest(".nm-recipe-row").remove();
         $(`#createMealForm input[name="RecipeIds"][value="${recipeId}"]`).remove();
+        pendingRecipeIds.delete(recipeId);
         $(`.recipeSearchRow`).each(function () {
             if (Number($(".recipeId", this).text()) === recipeId) {
                 $(this).removeClass("selected");
@@ -79,117 +105,71 @@ function removeSelectedRecipe() {
         });
         updateSelectedCard();
     }
+
+    if (typeof showDeleteModal === "function") {
+        showDeleteModal("Remove this recipe?", doRemove);
+    } else {
+        doRemove();
+    }
 }
 
-// ── Tag filter dropdown ───────────────────────────────────────
-// Builds a multi-select dropdown in #tagFilterDropdown.
+// ── Tag filter chips ──────────────────────────────────────────
+// Builds toggleable pill chips in #tagFilterChips.
 // recipeSearch.js populates #tagFilter with <option>s via loadTags();
-// we watch those mutations to add matching rows to the dropdown panel.
+// we watch those mutations to add matching chips.
 // Selected tags are stored in window.activeTagFilters and a change event
 // on #tagFilter triggers recipeSearchHandler in recipeSearch.js.
 
-function initTagFilterDropdown() {
-    const container = document.getElementById("tagFilterDropdown");
+function initTagFilterChips() {
+    const container = document.getElementById("tagFilterChips");
     const tagFilter  = document.getElementById("tagFilter");
     if (!container || !tagFilter) return;
 
-    container.innerHTML = `
-        <button type="button" class="tfd-trigger" id="tfdTrigger">
-            <span class="tfd-trigger-label" id="tfdLabel">All tags</span>
-            <svg class="tfd-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2.5"
-                 stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"/>
-            </svg>
-        </button>
-    `;
-
-    // Append panel to body so it escapes any overflow:hidden ancestor
-    const panel = document.createElement("div");
-    panel.className = "tfd-panel";
-    panel.id = "tfdPanel";
-    panel.innerHTML = `
-        <div class="tfd-option tfd-all-option active" data-value="">
-            <span class="tfd-check"></span>
-            <span class="tfd-option-text">All tags</span>
-        </div>
-    `;
-    document.body.appendChild(panel);
-
-    const trigger    = document.getElementById("tfdTrigger");
-    const label      = document.getElementById("tfdLabel");
     let selectedTags = [];
 
-    function positionPanel() {
-        const rect = trigger.getBoundingClientRect();
-        panel.style.top   = `${rect.bottom + 4}px`;
-        panel.style.left  = `${rect.left}px`;
-        panel.style.width = `${Math.max(rect.width, 180)}px`;
-    }
+    const allChip = document.createElement("button");
+    allChip.type = "button";
+    allChip.className = "filter-chip active";
+    allChip.dataset.tag = "";
+    allChip.textContent = "All tags";
+    container.appendChild(allChip);
 
-    function closePanel() {
-        if (!panel.classList.contains("open")) return;
-        panel.classList.remove("open");
-        trigger.classList.remove("open");
-        // Fire search only when the panel is committed/closed
+    function commit() {
         window.activeTagFilters = [...selectedTags];
         tagFilter.dispatchEvent(new Event("change"));
     }
 
-    trigger.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const isOpen = panel.classList.contains("open");
-        if (isOpen) {
-            closePanel();
-        } else {
-            positionPanel();
-            panel.classList.add("open");
-            trigger.classList.add("open");
-        }
+    function updateUI() {
+        allChip.classList.toggle("active", selectedTags.length === 0);
+        container.querySelectorAll(".filter-chip[data-tag]").forEach(chip => {
+            if (!chip.dataset.tag) return;
+            chip.classList.toggle("active", selectedTags.includes(chip.dataset.tag));
+        });
+        commit();
+    }
+
+    allChip.addEventListener("click", () => {
+        selectedTags = [];
+        updateUI();
     });
 
-    // Clicks inside the panel toggle selections but never close or bubble
-    panel.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const option = e.target.closest(".tfd-option");
-        if (!option) return;
-        const value = option.dataset.value;
-        if (value === "") {
-            selectedTags = [];
-        } else {
-            const idx = selectedTags.indexOf(value);
-            if (idx === -1) selectedTags.push(value);
-            else selectedTags.splice(idx, 1);
-        }
-        updateSelectionUI(selectedTags);
-    });
-
-    document.addEventListener("click", () => closePanel());
-
-    window.addEventListener("scroll", closePanel, { passive: true, capture: true });
-    window.addEventListener("resize", closePanel, { passive: true });
-
-    // Watch #tagFilter for options added by loadTags() in recipeSearch.js
     const observer = new MutationObserver(() => {
         Array.from(tagFilter.options).forEach(opt => {
             if (!opt.value) return;
-            if (panel.querySelector(`.tfd-option[data-value="${CSS.escape(opt.value)}"]`)) return;
-            const optEl = document.createElement("div");
-            optEl.className = "tfd-option";
-            optEl.dataset.value = opt.value;
-            optEl.innerHTML = `<span class="tfd-check"></span><span class="tfd-option-text">${opt.textContent.trim()}</span>`;
-            panel.appendChild(optEl);
+            if (container.querySelector(`.filter-chip[data-tag="${CSS.escape(opt.value)}"]`)) return;
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "filter-chip";
+            chip.dataset.tag = opt.value;
+            chip.textContent = opt.textContent.trim();
+            chip.addEventListener("click", () => {
+                const idx = selectedTags.indexOf(opt.value);
+                if (idx === -1) selectedTags.push(opt.value);
+                else selectedTags.splice(idx, 1);
+                updateUI();
+            });
+            container.appendChild(chip);
         });
     });
     observer.observe(tagFilter, { childList: true });
-
-    function updateSelectionUI(selected) {
-        panel.querySelector(".tfd-all-option").classList.toggle("active", selected.length === 0);
-        panel.querySelectorAll(".tfd-option:not(.tfd-all-option)").forEach(opt => {
-            opt.classList.toggle("active", selected.includes(opt.dataset.value));
-        });
-        label.textContent = selected.length === 0
-            ? "All tags"
-            : selected.length === 1 ? selected[0] : `${selected.length} tags`;
-    }
 }

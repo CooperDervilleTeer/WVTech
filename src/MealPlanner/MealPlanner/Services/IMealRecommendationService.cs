@@ -5,6 +5,6 @@ namespace MealPlanner.Services;
 
 public interface IMealRecommendationService
 {
-    public Task<List<Meal>> GetRecommendedMealsForUser(User user, DateTime mealDate, DayPlanConfigViewModel config);
-    public Task<Recipe?> GetOneRecipeRecommendation(User user, DateTime date, IEnumerable<int> excludeRecipeIds);
+    public Task<List<Meal>> GetRecommendedMealsForUser(User user, DateTime mealDate, DayPlanConfigViewModel config, int? excludeMealId = null);
+    public Task<Recipe?> GetOneRecipeRecommendation(User user, DateTime date, IEnumerable<int> excludeRecipeIds, Recipe? slotTemplate = null);
 }

@@ -419,6 +419,23 @@
     line-height: 1;
 }
 
+/* ── Recipe add indicator: swap plus→check when selected ─── */
+.em-indicator-check {
+    display: none;
+}
+
+.recipeSearchRow.selected .em-indicator-plus {
+    display: none;
+}
+
+.recipeSearchRow.selected .em-indicator-check {
+    display: block;
+}
+
+.recipeSearchRow.selected .em-add-indicator {
+    background: rgba(46, 201, 154, 0.35);
+}
+
 /* ── Action bar ──────────────────────────────────────────── */
 .em-action-bar {
     display: flex;

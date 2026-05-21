@@ -6,8 +6,31 @@ namespace MealPlanner.DAL.Concrete;
 
 public class TagRepository : Repository<Tag>, ITagRepository
 {
+    private readonly MealPlannerDBContext _context;
+
     public TagRepository(MealPlannerDBContext context) : base(context)
     {
+        _context = context;
+    }
+
+    /// <summary>
+    /// Returns a smoothed-IDF rarity weight per tag, keyed by tag id.
+    /// weight = log((N + 1) / (1 + df)) where N is the total recipe count and
+    /// df is the number of recipes carrying that tag. A common tag (carried
+    /// by many recipes) gets a small weight; a rare tag gets a large one.
+    /// Always non-negative. Every tag in the table appears in the result —
+    /// including ones currently carried by zero recipes — so the scorer can
+    /// rely on the lookup rather than falling back to a default.
+    /// </summary>
+    public async Task<Dictionary<int, float>> GetTagRarityWeightsAsync()
+    {
+        int totalRecipes = await _context.Recipes.CountAsync();
+        var counts = await _dbset
+            .Select(t => new { t.Id, Df = t.Recipes.Count })
+            .ToListAsync();
+        return counts.ToDictionary(
+            c => c.Id,
+            c => (float)Math.Log((double)(totalRecipes + 1) / (1 + c.Df)));
     }
 
     public async Task<List<string>> GetTagNamesAsync()

@@ -1,8 +1,14 @@
 using MealPlanner.DAL.Abstract;
-using MealPlanner.Models;
 
 namespace MealPlanner.Services.Recommendation;
 
+/// <summary>
+/// Recommendation stream backed by the user's local recipe database. It scores
+/// every recipe that passes the slot filters and returns them ranked. Weak
+/// recipes are not pruned here — the service merges this stream's output with
+/// the others by score, so a low-scoring local recipe simply sorts below a
+/// stronger candidate (local or external) rather than being dropped outright.
+/// </summary>
 public sealed class LocalRecipeStream : IRecommendationStream
 {
     private readonly IRecipeRepository _recipeRepository;
@@ -19,11 +25,14 @@ public sealed class LocalRecipeStream : IRecommendationStream
         _filters = filters.ToList();
     }
 
-    public async Task<IEnumerable<Recipe>> GetRankedCandidatesAsync(RecommendationContext ctx)
+    public async Task<IReadOnlyList<ScoredRecipe>> GetRankedCandidatesAsync(RecommendationContext ctx)
     {
-        var recipes = await _recipeRepository.GetAllWithTagsAsync();
+        var recipes = await _recipeRepository.GetAllWithTagsAndIngredientsAsync();
+
         return recipes
             .Where(r => _filters.All(f => f.Allow(r, ctx)))
-            .OrderByDescending(r => _scorers.Sum(s => s.Score(r, ctx)));
+            .Select(r => new ScoredRecipe(r, _scorers.Sum(s => s.Score(r, ctx))))
+            .OrderByDescending(x => x.Score)
+            .ToList();
     }
 }

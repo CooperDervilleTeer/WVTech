@@ -163,7 +163,7 @@ public class UserFoodPreferenceRepositoryTests
 
         var tagMock = new Mock<ITagRepository>();
         tagMock.Setup(r => r.FindByNameAsync("New Tag")).ReturnsAsync((Tag?)null);
-        tagMock.Setup(r => r.CreateOrUpdate(It.IsAny<Tag>())).Returns<Tag>(t => { t.Id = 99; return t; });
+        tagMock.Setup(r => r.CreateOrUpdate(It.IsAny<Tag>())).Returns<Tag>(t => t);
 
         var (repo, _) = CreateRepo(tagMock);
         await repo.AddFoodPreferencesAsync("user-1", ["New Tag"]);

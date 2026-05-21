@@ -65,48 +65,16 @@
     gap: 1rem;
 }
 
-/* Wrapper is the actual grid item; delete button is anchored inside */
+/* Slot stacks card + remove button vertically */
 .sm-card-slot {
-    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Form fills the slot */
+/* Each form fills its grid cell */
 .sm-card-form {
     margin: 0;
-    display: block;
-    height: 100%;
-}
-
-/* Delete button — absolutely positioned bottom-right of the card */
-.sm-delete-form {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    margin: 0;
-    padding: 0;
-    z-index: 5;
-}
-
-.sm-delete-btn {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: rgba(220, 50, 50, 0.12);
-    border: 1px solid rgba(220, 50, 50, 0.35);
-    color: #ef4444;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    transition: background 0.15s, border-color 0.15s;
-}
-
-.sm-delete-btn:hover {
-    background: rgba(220, 50, 50, 0.28);
-    border-color: rgba(220, 50, 50, 0.65);
+    display: contents;
 }
 
 /* ── Card ────────────────────────────────────────────────────── */
@@ -116,7 +84,6 @@
     align-items: center;
     gap: 10px;
     width: 100%;
-    height: 100%;
     background: var(--sm-card-bg);
     border: 0.5px solid var(--sm-card-border);
     border-radius: 12px;
@@ -285,6 +252,45 @@
     padding: 10px 12px;
     width: 100%;
     text-align: center;
+}
+
+/* ── Remove Meal button — below card, revealed on hover ──────── */
+.sm-remove-form {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 36px;
+    padding-top: 6px;
+    margin: 0;
+    overflow: hidden;
+}
+
+.sm-delete-btn {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 16px;
+    border-radius: 8px;
+    background: transparent;
+    color: #E24B4A;
+    border: 1px solid rgba(226, 75, 74, 0.45);
+    cursor: pointer;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.15s ease, transform 0.15s ease,
+                background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sm-card-slot:hover .sm-delete-btn,
+.sm-card-slot.controls-visible .sm-delete-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.sm-delete-btn:hover {
+    background: #E24B4A;
+    border-color: #E24B4A;
+    color: #ffffff;
 }
 
 /* ── Responsive ──────────────────────────────────────────────── */

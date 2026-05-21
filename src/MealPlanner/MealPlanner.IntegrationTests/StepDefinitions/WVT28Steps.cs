@@ -301,6 +301,7 @@ public class WVT28Steps
         {
             try { _ = body.TagName; return false; }
             catch (StaleElementReferenceException) { return true; }
+            catch (UnknownErrorException) { return true; }
         });
         WaitForPageLoad();
     }

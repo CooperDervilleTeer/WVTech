@@ -264,7 +264,7 @@ public class MealController : Controller
             MealPreferences = [preferences]
         };
 
-        var newMeals = await _recommendationService.GetRecommendedMealsForUser(user, mealDate, config);
+        var newMeals = await _recommendationService.GetRecommendedMealsForUser(user, mealDate, config, excludeMealId: mealId);
         await _mealRepo.LoadRecipesAsync(meal);
         meal.Recipes = newMeals.FirstOrDefault()?.Recipes ?? [];
         _mealRepo.CreateOrUpdate(meal);
@@ -291,12 +291,11 @@ public class MealController : Controller
 
         await _mealRepo.LoadRecipesAsync(meal);
         var mealDate = meal.StartTime?.Date ?? DateTime.Today;
-        var dayMeals = await _mealRepo.GetUserMealsByDateAsync(user, mealDate);
-        var excludeIds = dayMeals.SelectMany(m => m.Recipes.Select(r => r.Id))
-            .Union(meal.Recipes.Select(r => r.Id))
-            .ToHashSet();
+        var dayIds = await _mealRepo.GetUserRecipeIdsForDateAsync(user, mealDate);
+        var excludeIds = dayIds.Union(meal.Recipes.Select(r => r.Id)).ToHashSet();
 
-        var replacement = await _recommendationService.GetOneRecipeRecommendation(user, mealDate, excludeIds);
+        var slotTemplate = await _recipeRepo.ReadRecipeWithIngredientsAsync(recipeId);
+        var replacement = await _recommendationService.GetOneRecipeRecommendation(user, mealDate, excludeIds, slotTemplate);
         if (replacement == null)
             return Json(new { noAlternative = true });
 
@@ -483,7 +482,7 @@ public class MealController : Controller
         Response.Cookies.Delete("ShoppingListSynced");
 
         TempData["SuccessMessage"] = "Meal updated successfully";
-        return RedirectToAction("EditMeal", new { id = model.Id });
+        return RedirectToAction("ViewMeal", new { id = model.Id });
     }
 
     [HttpPost]

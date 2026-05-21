@@ -29,6 +29,7 @@ public class WVT144Steps
     public void GivenUserHasACalorieTargetSet(string userName)
     {
         var ctx = BDDSetup.Context;
+        ctx.ChangeTracker.Clear();
         var user = ctx.Set<User>().First(u => u.NormalizedEmail == $"{userName}@fakeemail.com".ToUpper());
 
         var existing = ctx.Set<UserNutritionPreference>().FirstOrDefault(p => p.UserId == user.Id);
@@ -442,10 +443,18 @@ public class WVT144Steps
     public void GivenUserHasDietaryRestriction(string userName, string restrictionName)
     {
         var ctx = BDDSetup.Context;
+        ctx.ChangeTracker.Clear();
         var user = ctx.Set<User>().First(u => u.NormalizedEmail == $"{userName}@fakeemail.com".ToUpper());
 
         var stale = ctx.Set<UserDietaryRestriction>().Where(udr => udr.UserId == user.Id).ToList();
         ctx.Set<UserDietaryRestriction>().RemoveRange(stale);
+
+        // Clear upvoted recipes to prevent contamination from WVT-176 scenarios
+        var upvotes = ctx.Set<UserRecipe>()
+            .Where(ur => ur.UserId == user.Id && ur.UserVote == UserVoteType.UpVote)
+            .ToList();
+        ctx.Set<UserRecipe>().RemoveRange(upvotes);
+
         ctx.SaveChanges();
 
         var restriction = ctx.Set<DietaryRestriction>().FirstOrDefault(dr => dr.Name == restrictionName);
@@ -487,7 +496,7 @@ public class WVT144Steps
         ctx.Add(recipe);
         ctx.SaveChanges();
 
-        ctx.Add(new UserRecipe { UserId = user.Id, RecipeId = recipe.Id, UserOwner = true, UserVote = UserVoteType.NoVote });
+        ctx.Add(new UserRecipe { UserId = user.Id, RecipeId = recipe.Id, UserOwner = true, UserVote = UserVoteType.UpVote });
         ctx.SaveChanges();
     }
 
@@ -509,7 +518,7 @@ public class WVT144Steps
         ctx.Add(recipe);
         ctx.SaveChanges();
 
-        ctx.Add(new UserRecipe { UserId = user.Id, RecipeId = recipe.Id, UserOwner = true, UserVote = UserVoteType.NoVote });
+        ctx.Add(new UserRecipe { UserId = user.Id, RecipeId = recipe.Id, UserOwner = true, UserVote = UserVoteType.DownVote });
         ctx.SaveChanges();
     }
 

@@ -81,6 +81,7 @@ public class WVT27Steps
     {
         var display = DisplayName(name);
         string? matchText = null;
+        string? actualAmount = null;
         _wait.Until(d =>
         {
             try
@@ -90,6 +91,7 @@ public class WVT27Steps
                     el.Text.Contains(display, StringComparison.OrdinalIgnoreCase));
                 if (match == null) return false;
                 matchText = match.Text;
+                actualAmount = match.FindElement(By.CssSelector(".pantry-qty-input")).GetAttribute("value");
                 return true;
             }
             catch (StaleElementReferenceException)
@@ -98,7 +100,7 @@ public class WVT27Steps
             }
         });
         Assert.That(matchText, Is.Not.Null, $"Expected '{name}' in pantry list but it was not found");
-        Assert.That(matchText, Does.Contain(amount));
+        Assert.That(actualAmount, Does.Contain(amount));
         Assert.That(matchText, Does.Contain(measurement).IgnoreCase);
     }
 
@@ -253,7 +255,7 @@ public class WVT27Steps
         _wait.Until(d =>
         {
             try { _ = anchor.TagName; return false; }
-            catch (StaleElementReferenceException) { return true; }
+            catch (WebDriverException) { return true; }
         });
         _wait.Until(d => ((IJavaScriptExecutor)d)
             .ExecuteScript("return document.readyState").ToString() == "complete");

@@ -140,8 +140,12 @@ public class WVT167Steps
     {
         _driver.FindElement(By.Id("Name")).Clear();
         _driver.FindElement(By.Id("Name")).SendKeys(NewRecipeName);
-        _driver.FindElement(By.Id("Directions")).Clear();
-        _driver.FindElement(By.Id("Directions")).SendKeys("Test directions");
+        var removeBtns = _driver.FindElements(By.CssSelector("#step-list .ar-step-remove-btn")).ToList();
+        foreach (var btn in removeBtns)
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", btn);
+        var stepInput = _driver.FindElement(By.Id("step-input"));
+        stepInput.SendKeys("Test directions");
+        stepInput.SendKeys(Keys.Enter);
         _driver.FindElement(By.Id("Calories")).Clear();
         _driver.FindElement(By.Id("Calories")).SendKeys("400");
         _driver.FindElement(By.Id("Protein")).Clear();

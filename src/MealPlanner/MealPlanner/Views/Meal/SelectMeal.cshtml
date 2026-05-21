@@ -59,7 +59,7 @@
                                             <span class="sm-macro-dot" style="background:#3B82F6"></span>@totalCals kcal
                                         </span>
                                         <span class="sm-macro-pill sm-macro-pill--tr">
-                                            <span class="sm-macro-dot" style="background:#92400E"></span>@totalProtein g
+                                            <span class="sm-macro-dot" style="background:var(--macro-protein)"></span>@totalProtein g
                                         </span>
                                         <span class="sm-macro-pill sm-macro-pill--bl">
                                             <span class="sm-macro-dot" style="background:#8B5CF6"></span>@totalCarbs g
@@ -86,11 +86,11 @@
                             </button>
                         }
                     </form>
-                    <form asp-action="RemoveMealTemplate" method="post" class="sm-delete-form">
+                    <form asp-action="RemoveMealTemplate" asp-controller="Meal" method="post" class="sm-remove-form">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="mealId" value="@meal.Id" />
-                        <input type="hidden" name="date" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
-                        <button type="submit" class="sm-delete-btn" title="Remove meal">✕</button>
+                        <input type="hidden" name="date"   value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                        <button type="submit" class="sm-delete-btn">Remove Meal</button>
                     </form>
                 </div>
             }
@@ -111,40 +111,5 @@
 </div>
 
 @section Scripts {
-<script>
-    // Selection highlight on click
-    document.querySelectorAll('.sm-card').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.sm-card').forEach(b => b.classList.remove('sm-card--selected'));
-            btn.classList.add('sm-card--selected');
-        });
-    });
-
-    // Mobile tap: first tap reveals macro overlay; second tap submits
-    var isTouchOnly = !window.matchMedia('(hover: hover)').matches;
-    if (isTouchOnly) {
-        document.querySelectorAll('.sm-card--has-meal').forEach(function (btn) {
-            btn.addEventListener('click', function (e) {
-                var overlay = btn.querySelector('.sm-macro-overlay');
-                if (!overlay) return;
-                if (!overlay.classList.contains('sm-macro-overlay--visible')) {
-                    e.preventDefault();
-                    document.querySelectorAll('.sm-macro-overlay--visible').forEach(function (o) {
-                        o.classList.remove('sm-macro-overlay--visible');
-                    });
-                    overlay.classList.add('sm-macro-overlay--visible');
-                }
-            });
-        });
-
-        // Dismiss overlay when tapping outside a card
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.sm-card--has-meal')) {
-                document.querySelectorAll('.sm-macro-overlay--visible').forEach(function (o) {
-                    o.classList.remove('sm-macro-overlay--visible');
-                });
-            }
-        });
-    }
-</script>
+    <script src="~/js/selectMeal.js" asp-append-version="true"></script>
 }

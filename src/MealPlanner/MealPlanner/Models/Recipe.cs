@@ -27,6 +27,14 @@ public class Recipe
     public string? ImageUrl { get; set; }
     public List<Meal> Meals { get; set; } = [];
     public List<Tag> Tags { get; set; } = [];
+
+    // Edamam's recipe categorization (dietLabels / healthLabels / cuisineType /
+    // mealType / dishType) — present only on recipes coming back from the
+    // external stream, used by EdamamTagClassifier.ResolveLocalTags to attach
+    // local Tag entities so the tag-based scorers can act on them. Transient:
+    // never persisted (cached external rows are URI-only per Edamam's TOS).
+    [NotMapped]
+    public List<string> ExternalCategorization { get; set; } = [];
     public List<User> Users { get; } = [];
     public List<UserRecipe> UserRecipes { get; } = [];
 

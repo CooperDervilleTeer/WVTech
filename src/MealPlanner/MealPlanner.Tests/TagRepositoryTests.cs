@@ -109,4 +109,94 @@ public class TagRepositoryTests
         // Assert
         Assert.That(names, Is.Empty);
     }
+
+    // --- GetTagRarityWeightsAsync ---
+
+    [Test]
+    public async Task GetTagRarityWeightsAsync_RareTagOutweighsCommonTag()
+    {
+        // The whole point of rarity weighting: a tag carried by few recipes
+        // (e.g. "Italian" cuisine) should weight more than one carried by many
+        // (e.g. "Breakfast" meal type).
+        using var context = CreateContext();
+        var common = new Tag { Name = "Breakfast" };
+        var rare = new Tag { Name = "Italian" };
+        context.Tags.AddRange(common, rare);
+        for (int i = 0; i < 5; i++)
+            context.Recipes.Add(new Recipe { Name = $"Common{i}", Directions = "", Tags = [common] });
+        context.Recipes.Add(new Recipe { Name = "Rare", Directions = "", Tags = [rare] });
+        context.SaveChanges();
+        var repo = new TagRepository(CreateContext());
+
+        var weights = await repo.GetTagRarityWeightsAsync();
+
+        Assert.That(weights[rare.Id], Is.GreaterThan(weights[common.Id]),
+            "the tag carried by fewer recipes must weight strictly more");
+    }
+
+    [Test]
+    public async Task GetTagRarityWeightsAsync_WeightsAreNonNegative()
+    {
+        // The smoothed-IDF formula must not produce negative weights, even for
+        // a tag that appears on every single recipe.
+        using var context = CreateContext();
+        var ubiquitous = new Tag { Name = "Everywhere" };
+        context.Tags.Add(ubiquitous);
+        for (int i = 0; i < 3; i++)
+            context.Recipes.Add(new Recipe { Name = $"R{i}", Directions = "", Tags = [ubiquitous] });
+        context.SaveChanges();
+        var repo = new TagRepository(CreateContext());
+
+        var weights = await repo.GetTagRarityWeightsAsync();
+
+        Assert.That(weights[ubiquitous.Id], Is.GreaterThanOrEqualTo(0f));
+    }
+
+    [Test]
+    public async Task GetTagRarityWeightsAsync_IncludesUnusedTags()
+    {
+        // A tag with zero recipes still belongs in the map — otherwise the
+        // scorer would treat it as missing and fall back to its default weight.
+        using var context = CreateContext();
+        var orphan = new Tag { Name = "OrphanTag" };
+        context.Tags.Add(orphan);
+        context.SaveChanges();
+        var repo = new TagRepository(CreateContext());
+
+        var weights = await repo.GetTagRarityWeightsAsync();
+
+        Assert.That(weights.ContainsKey(orphan.Id), Is.True);
+    }
+
+    [Test]
+    public async Task GetTagRarityWeightsAsync_NoTags_ReturnsEmptyDictionary()
+    {
+        var repo = new TagRepository(CreateContext());
+
+        var weights = await repo.GetTagRarityWeightsAsync();
+
+        Assert.That(weights, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetTagRarityWeightsAsync_EquallyFrequentTags_GetEqualWeights()
+    {
+        // Sanity check: two tags carried by the same number of recipes must
+        // receive the same weight.
+        using var context = CreateContext();
+        var a = new Tag { Name = "A" };
+        var b = new Tag { Name = "B" };
+        context.Tags.AddRange(a, b);
+        for (int i = 0; i < 3; i++)
+        {
+            context.Recipes.Add(new Recipe { Name = $"Ra{i}", Directions = "", Tags = [a] });
+            context.Recipes.Add(new Recipe { Name = $"Rb{i}", Directions = "", Tags = [b] });
+        }
+        context.SaveChanges();
+        var repo = new TagRepository(CreateContext());
+
+        var weights = await repo.GetTagRarityWeightsAsync();
+
+        Assert.That(weights[a.Id], Is.EqualTo(weights[b.Id]).Within(0.0001f));
+    }
 }

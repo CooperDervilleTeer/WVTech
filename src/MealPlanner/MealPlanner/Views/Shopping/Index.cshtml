@@ -47,23 +47,25 @@
     </form>
 
     <!-- Add item -->
-    <form asp-action="AddItem" method="post" class="sl-add-row">
-        @Html.AntiForgeryToken()
-        <input type="text" name="itemName" class="sl-input sl-name-field"
-               placeholder="Ingredient name" required />
-        <input type="number" name="amount" class="sl-input sl-qty-field"
-               placeholder="0" min="0" step="any" />
-        <select name="measurement" class="sl-input sl-unit-select">
-            <option value="">Unit</option>
-            <option value="Count">Count</option>
-            <option value="Cup(s)">Cup(s)</option>
-            <option value="Ounce(s)">Ounce(s)</option>
-            <option value="Pound(s)">Pounds</option>
-            <option value="L">L</option>
-            <option value="KG">KG</option>
-        </select>
-        <button type="submit" class="sl-add-btn btn-success">Add item</button>
-    </form>
+    <div class="sl-card sl-add-card">
+        <form asp-action="AddItem" method="post" class="sl-add-row">
+            @Html.AntiForgeryToken()
+            <input type="number" name="amount" class="sl-input sl-qty-field"
+                   placeholder="0" min="0" step="any" />
+            <select name="measurement" class="sl-input sl-unit-select">
+                <option value="Unit">Unit</option>
+                <option value="Count">Count</option>
+                <option value="Cup(s)">Cup(s)</option>
+                <option value="Ounce(s)">Ounce(s)</option>
+                <option value="Pound(s)">Pounds</option>
+                <option value="L">L</option>
+                <option value="KG">KG</option>
+            </select>
+            <input type="text" name="itemName" class="sl-input sl-name-field"
+                   placeholder="Ingredient name" required />
+            <button type="submit" class="sl-add-btn">Add item</button>
+        </form>
+    </div>
 
     <!-- Items list card -->
     <div class="sl-card back2">

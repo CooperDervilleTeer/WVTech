@@ -224,6 +224,99 @@
     color: #ef4444;
 }
 
+/* ── Step rows ───────────────────────────────────────────────── */
+.ar-step-add-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.ar-step-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.ar-step-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-top: 0.5px solid var(--ar-divider);
+    gap: 8px;
+}
+
+.ar-step-row:first-child {
+    border-top: none;
+}
+
+.ar-step-num {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ar-muted);
+    flex-shrink: 0;
+    min-width: 20px;
+    padding-top: 1px;
+}
+
+.ar-step-text {
+    font-size: 13px;
+    color: var(--ar-text1);
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+    line-height: 1.45;
+    cursor: text;
+    border-radius: 4px;
+    transition: background-color 0.12s;
+}
+
+.ar-step-text:hover {
+    text-decoration: underline dotted var(--ar-text2);
+    text-underline-offset: 3px;
+}
+
+.ar-step-inline-input {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    color: var(--ar-text1);
+    background: var(--ar-input-bg);
+    border: 0.5px solid #2EC99A;
+    border-radius: 6px;
+    padding: 3px 7px;
+    outline: none;
+    line-height: 1.45;
+    box-sizing: border-box;
+}
+
+.ar-step-remove-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    border: none;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: background-color 0.15s;
+}
+
+.ar-step-remove-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.ar-step-validation-msg {
+    font-size: 12px;
+    color: #ef4444;
+    margin: 6px 0 0;
+}
+
 /* Edit button */
 .ar-ing-edit-btn {
     width: 28px;

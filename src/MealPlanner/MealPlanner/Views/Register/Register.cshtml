@@ -6,72 +6,108 @@
     Layout = "~/Views/Shared/_AccountLayout.cshtml";
 }
 
-<!-- 
-    Main container for the Register page.
-    Ensures consistent styling and layout for all account-related pages.
--->
-<div class="account-container">
-    <div class="account-box">
-        <h2 class="text-center mb-4">Register</h2>
+<div class="auth-page">
+    <div class="auth-card">
 
-        <!-- 
-            Form for user registration.
-            - Uses POST method for secure submission.
-            - Includes anti-forgery token to prevent CSRF attacks.
-        -->
-        <form asp-action="Register" method="post">
+        <!-- Logo -->
+        <div class="auth-logo">
+            <i class="ti ti-bowl-spoon"></i>
+            <span>OneBite</span>
+        </div>
+
+        <!-- Heading -->
+        <h1 class="auth-heading">Create your account</h1>
+        <p class="auth-sub">Join OneBite and start planning your meals</p>
+
+        <!-- Validation summary -->
+        <div asp-validation-summary="ModelOnly" class="auth-error-summary"></div>
+
+        <form asp-action="Register" method="post" novalidate>
             @Html.AntiForgeryToken()
 
-            <!-- Display model-level validation errors (e.g., password mismatch, duplicate email) -->
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <!-- Name input field -->
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            <!-- Name -->
+            <div class="auth-field">
+                <label class="auth-label" asp-for="Name">Name</label>
+                <input asp-for="Name" class="auth-input" type="text"
+                       placeholder="Your name" autocomplete="name" />
+                <span asp-validation-for="Name" class="auth-field-error"></span>
             </div>
 
-            <!-- Email input field -->
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+            <!-- Email -->
+            <div class="auth-field">
+                <label class="auth-label" asp-for="Email">Email</label>
+                <input asp-for="Email" class="auth-input" type="email"
+                       placeholder="you@example.com" autocomplete="email" />
+                <span asp-validation-for="Email" class="auth-field-error"></span>
             </div>
 
-            <!-- Password input field -->
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
+            <!-- Password -->
+            <div class="auth-field">
+                <label class="auth-label" asp-for="Password">Password</label>
+                <div class="auth-input-wrap">
+                    <input asp-for="Password" class="auth-input" type="password"
+                           placeholder="••••••••" autocomplete="new-password" id="Password" />
+                    <button type="button" class="auth-eye-btn" id="togglePassword" tabindex="-1"
+                            aria-label="Toggle password visibility">
+                        <i class="ti ti-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password" class="auth-field-error"></span>
             </div>
 
-            <!-- Confirm Password input field -->
-            <div class="mb-3">
-                <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            <!-- Confirm Password -->
+            <div class="auth-field">
+                <label class="auth-label" asp-for="ConfirmPassword">Confirm Password</label>
+                <div class="auth-input-wrap">
+                    <input asp-for="ConfirmPassword" class="auth-input" type="password"
+                           placeholder="••••••••" autocomplete="new-password" id="ConfirmPassword" />
+                    <button type="button" class="auth-eye-btn" id="toggleConfirmPassword" tabindex="-1"
+                            aria-label="Toggle confirm password visibility">
+                        <i class="ti ti-eye" id="eyeIconConfirm"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="ConfirmPassword" class="auth-field-error"></span>
             </div>
 
-            <!-- Submit button styled with Bootstrap classes for full-width and padding -->
-            <Input type="submit" value="Register" class="btn btn-primary w-100 p-2" />
+            <!-- Submit -->
+            <button type="submit" class="auth-submit">Register</button>
 
-            <!-- Link to login page for users who already have an account -->
-            <p class="text-center mt-2">
-                Already have an account? <a asp-controller="Login" asp-action="Login" class="text-decoration-none">Login here</a>
-            </p>
-
-            <!-- Back link to navigate to the home page -->
-            <div class="text-center">
-                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">Back</a>
-            </div>
         </form>
+
+        <div class="auth-divider"></div>
+
+        <!-- Login link -->
+        <p class="auth-register">
+            Already have an account?
+            <a asp-controller="Login" asp-action="Login" class="auth-link">Login here</a>
+        </p>
+
+        <!-- Back link -->
+        <div class="auth-back">
+            <a asp-controller="Home" asp-action="Index" class="auth-back-link">
+                <i class="ti ti-arrow-left"></i>
+                Back
+            </a>
+        </div>
+
     </div>
 </div>
 
 @section Scripts {
-   @{
-    <!-- Include client-side validation scripts partial for unobtrusive validation -->
-    await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
-   }
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml"); }
+    <script>
+        function wireToggle(inputId, btnId, iconId) {
+            const input = document.getElementById(inputId);
+            const btn   = document.getElementById(btnId);
+            const icon  = document.getElementById(iconId);
+            if (!input || !btn || !icon) return;
+            btn.addEventListener('click', function () {
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                icon.className = show ? 'ti ti-eye-off' : 'ti ti-eye';
+            });
+        }
+        wireToggle('Password', 'togglePassword', 'eyeIcon');
+        wireToggle('ConfirmPassword', 'toggleConfirmPassword', 'eyeIconConfirm');
+    </script>
 }

@@ -6,10 +6,12 @@ namespace MealPlanner.DAL.Concrete;
 
 public class UserFoodPreferenceRepository : Repository<UserFoodPreference>, IUserFoodPreferenceRepository
 {
+    private readonly MealPlannerDBContext _context;
     private readonly ITagRepository _tagRepository;
 
     public UserFoodPreferenceRepository(MealPlannerDBContext context, ITagRepository tagRepository) : base(context)
     {
+        _context = context;
         _tagRepository = tagRepository;
     }
 
@@ -47,6 +49,7 @@ public class UserFoodPreferenceRepository : Repository<UserFoodPreference>, IUse
                 _dbset.Add(pref);
             }
         }
+        await _context.SaveChangesAsync();
     }
 
     public async Task RemoveFoodPreferenceAsync(string userId, string tagName)
@@ -56,5 +59,6 @@ public class UserFoodPreferenceRepository : Repository<UserFoodPreference>, IUse
 
         var pref = await _dbset.FindAsync(userId, tag.Id);
         if (pref != null) _dbset.Remove(pref);
+        await _context.SaveChangesAsync();
     }
 }

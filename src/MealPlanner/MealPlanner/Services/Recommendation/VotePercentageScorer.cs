@@ -8,5 +8,5 @@ namespace MealPlanner.Services.Recommendation;
 public sealed class VotePercentageScorer : IRecipeScorer
 {
     public float Score(Recipe recipe, RecommendationContext ctx) =>
-        ctx.User.VotePercentages.GetValueOrDefault(recipe.Id, 0f);
+        ctx.User.VotePercentages.GetValueOrDefault(recipe.Id, 0.5f);
 }

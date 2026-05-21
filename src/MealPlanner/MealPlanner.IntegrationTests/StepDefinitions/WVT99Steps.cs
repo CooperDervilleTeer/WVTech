@@ -164,7 +164,7 @@ public class WVT99Steps
     [When("{string} submits the edit recipe form")]
     public void WhenUserSubmitsEditRecipeForm(string username)
     {
-        var btn = _driver.FindElement(By.CssSelector("button.buttonBlue[type='submit']"));
+        var btn = _driver.FindElement(By.CssSelector("button.ar-submit-btn[type='submit']"));
         ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView(true);", btn);
         ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", btn);
         new WebDriverWait(_driver, TimeSpan.FromSeconds(10)).Until(driver =>

@@ -45,14 +45,17 @@ public class WVT34Steps
     [Given("{string} had upvoted the recipe")]
     public void GivenHadUpvotedTheRecipe(string userName)
     {
-        UserRecipe userRecipe = _context.Find<UserRecipe>(SharedSteps.Users[userName].Id, _recipeId)
-            ?? new UserRecipe()
-            {
-                User = SharedSteps.Users[userName],
-                Recipe = _context.Find<Recipe>(_recipeId)
-            };
-        userRecipe.UserVote = UserVoteType.UpVote;
-        _context.Update(userRecipe);
+        var userId = SharedSteps.Users[userName].Id;
+        var userRecipe = _context.Find<UserRecipe>(userId, _recipeId);
+        if (userRecipe == null)
+        {
+            userRecipe = new UserRecipe { UserId = userId, RecipeId = _recipeId, UserVote = UserVoteType.UpVote };
+            _context.Add(userRecipe);
+        }
+        else
+        {
+            userRecipe.UserVote = UserVoteType.UpVote;
+        }
         _context.SaveChanges();
     }
 
@@ -67,6 +70,7 @@ public class WVT34Steps
     [Given("there is a recipe named {string} with no votes")]
     public void GivenThereIsARecipeNamedWithNoVotes(string recipeName)
     {
+        _context.ChangeTracker.Clear();
         Recipe? recipe = _context.Set<Recipe>()
             .Where(r => r.Name == recipeName)
             .FirstOrDefault();

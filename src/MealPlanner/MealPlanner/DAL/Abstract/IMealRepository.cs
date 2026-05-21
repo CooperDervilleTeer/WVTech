@@ -5,6 +5,7 @@ namespace MealPlanner.DAL.Abstract;
 public interface IMealRepository : IRepository<Meal>
 {
     Task<List<Meal>> GetUserMealsByDateAsync(User user, DateTime date);
+    Task<HashSet<int>> GetUserRecipeIdsForDateAsync(User user, DateTime date, int? excludeMealId = null);
     Task<List<Meal>> GetUserMealsByDateWithIngredientsAsync(User user, DateTime date);
     Task<List<Meal>> GetUserMealsByDateRangeAsync(User user, DateTime start, DateTime end);
     Task<List<Meal>> GetUserMealsByDateRangeWithIngredientsAsync(User user, DateTime start, DateTime end);

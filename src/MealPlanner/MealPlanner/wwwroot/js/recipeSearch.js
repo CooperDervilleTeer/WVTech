@@ -20,20 +20,36 @@ $(document).ready(() => {
             const externalUri = $row.attr("externalUri");
 
             let recipeId = Number($row.find(".recipeId").text());
-
             recipeId = await resolveRecipeId(recipeId, recipeName, externalUri);
             if (!recipeId) return;
 
-             // Check for duplicate
-            const isDuplicate = $(`#mealRecipeList [data-id="${recipeId}"]`).length > 0;
-            if (isDuplicate) {
-                alert("This recipe is already in the meal.");
+            // Store resolved ID back on the row
+            $row.find(".recipeId").text(recipeId);
+            $row.find(".recipeIdInput").val(recipeId);
+
+            // Alert if already in the meal
+            if ($(`#mealRecipeList [data-id="${recipeId}"]`).length > 0) {
+                alert("This recipe is already in the meal");
                 return;
             }
 
+            // Toggle pending selection
+            $row.toggleClass("selected");
+            updateAddSelectedBtn();
+        });
 
+        $(document).on("click", "#addSelectedRecipesBtn", function () {
             const $mealForm = $("#editMealForm");
-            addRecipeToMealForm($mealForm, recipeId, recipeName);
+            $(".recipeSearchRow.selected").each(function () {
+                const $row = $(this);
+                const recipeId = Number($row.find(".recipeId").text());
+                const recipeName = $row.find(".recipeName").text();
+                if (!recipeId) return;
+                if ($(`#mealRecipeList [data-id="${recipeId}"]`).length > 0) return;
+                addRecipeToMealForm($mealForm, recipeId, recipeName);
+            });
+            $(".recipeSearchRow").removeClass("selected");
+            updateAddSelectedBtn();
         });
 
         $(document).on("click", ".delete-recipe-btn", function (e) {
@@ -76,6 +92,16 @@ function addRecipeToMealForm($mealForm, recipeId, recipeName) {
     $actions.append($removeBtn);
     $row.append($name, $actions, $hidden);
     $("#mealRecipeList").append($row);
+}
+
+function updateAddSelectedBtn() {
+    const count = $(".recipeSearchRow.selected").length;
+    const $btn = $("#addSelectedRecipesBtn");
+    if (count > 0) {
+        $btn.show().text(`Add ${count} recipe${count === 1 ? "" : "s"}`);
+    } else {
+        $btn.hide();
+    }
 }
 
 // Throttle function from https://www.geeksforgeeks.org/javascript/javascript-throttling/
@@ -123,6 +149,7 @@ async function recipeSearchHandler(event)
 
     $("#error").hide();
     $("#recipeResults").text("");
+    updateAddSelectedBtn();
 
     let recipes;
 
@@ -149,25 +176,26 @@ async function recipeSearchHandler(event)
     }
     else
     {
-        // Parallel fetch per tag, then intersect results (AND logic)
+        // Parallel fetch per tag, then union results (OR logic)
         const fetches = tags.map(tag =>
             fetch(`${API_ROUTE}search?name=${encodeURIComponent(search)}&tag=${encodeURIComponent(tag)}`)
                 .then(r => (r.ok ? r.json() : []))
         );
         const results = await Promise.all(fetches);
 
-        if (results.some(r => r.length === 0))
+        const seen = new Set();
+        recipes = [];
+        for (const set of results)
         {
-            showSearchError("No recipes found, sorry!");
-            return;
+            for (const r of set)
+            {
+                if (!seen.has(r.id))
+                {
+                    seen.add(r.id);
+                    recipes.push(r);
+                }
+            }
         }
-
-        const intersectedIds = results.reduce((ids, set) => {
-            const setIds = new Set(set.map(r => r.id));
-            return new Set([...ids].filter(id => setIds.has(id)));
-        }, new Set(results[0].map(r => r.id)));
-
-        recipes = results[0].filter(r => intersectedIds.has(r.id));
 
         if (recipes.length === 0)
         {

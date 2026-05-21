@@ -91,12 +91,6 @@
 }
 
 /* ── Items list ──────────────────────────────────────────────── */
-.pantry-item-amount-text {
-    font-size: 13px;
-    color: var(--text2, #a0a0a0);
-    flex-shrink: 0;
-}
-
 .pantry-item-row {
     display: flex;
     align-items: center;

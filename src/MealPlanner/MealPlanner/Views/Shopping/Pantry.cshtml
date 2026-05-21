@@ -48,7 +48,7 @@
             <input id="Amount" name="Amount" type="number" step="any" min="0"
                    class="pantry-input pantry-qty-field" placeholder="0" />
             <select id="Measurement" name="Measurement" class="pantry-input pantry-unit-select">
-                <option value="">Unit</option>
+                <option value="Unit">Unit</option>
                 <option value="Count">Count</option>
                 <option value="Cup(s)">Cup(s)</option>
                 <option value="Ounce(s)">Ounce(s)</option>
@@ -70,7 +70,6 @@
             {
                 <div class="pantry-item-row pantry-item">
                     <span class="pantry-item-name">@item.IngredientBase.Display()</span>
-                    <span class="pantry-item-amount-text">@item.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)</span>
                     <div class="pantry-item-right">
                         <form asp-action="UpdatePantryItemAmount" method="post" class="pantry-qty-form">
                             @Html.AntiForgeryToken()

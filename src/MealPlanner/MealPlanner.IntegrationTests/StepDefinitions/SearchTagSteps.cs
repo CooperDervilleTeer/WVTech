@@ -20,17 +20,18 @@ public class SearchTagSteps
     [Then("the tag filter dropdown is visible")]
     public void ThenTheTagFilterDropdownIsVisible()
     {
-        var dropdown = _wait.Until(driver =>
+        // Tag filter is now a chip row (#tagFilterChips) populated by JS.
+        // Wait for at least one .filter-chip to appear (JS adds "All tags" on ready).
+        var chip = _wait.Until(driver =>
         {
             try
             {
-                var el = driver.FindElement(By.CssSelector("#tagFilter"));
-                return el.Displayed ? el : null;
+                var els = driver.FindElements(By.CssSelector("#tagFilterChips .filter-chip"));
+                return els.Count > 0 ? els[0] : null;
             }
             catch (NoSuchElementException) { return null; }
         });
-        Assert.That(dropdown, Is.Not.Null, "Tag filter dropdown (#tagFilter) was not found on the page");
-        Assert.That(dropdown!.Displayed, Is.True);
+        Assert.That(chip, Is.Not.Null, "No tag filter chips found in #tagFilterChips — JS may not have initialized");
     }
 
     [When("{string} selects {string} from the tag filter")]

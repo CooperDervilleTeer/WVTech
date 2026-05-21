@@ -1,5 +1,6 @@
 // ── Ingredients ──────────────────────────────────────────────────────────────
 
+// TODO: measurements should eventually be retrieved from the DB rather than hardcoded
 const UNIT_OPTIONS = [
     { value: 'Unit',     label: 'Unit' },
     { value: 'Count',    label: 'Count' },
@@ -260,6 +261,147 @@ function escapeHtml(str) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
 }
+
+// ── Step-by-step instructions ─────────────────────────────────────────────────
+
+function parseDirections(raw) {
+    if (!raw || !raw.trim()) return [];
+    return raw.split('\n')
+        .map(l => l.trim())
+        .filter(Boolean)
+        .map(l => { const m = l.match(/^\d+\.\s+(.+)$/); return m ? m[1] : l; });
+}
+
+function serializeSteps() {
+    return Array.from(document.querySelectorAll('#step-list .ar-step-row'))
+        .map((row, i) => {
+            const span  = row.querySelector('.ar-step-text');
+            const input = row.querySelector('.ar-step-inline-input');
+            const text  = span ? span.textContent.trim() : (input ? input.value.trim() : '');
+            return `${i + 1}. ${text}`;
+        })
+        .join('\n');
+}
+
+function renumberSteps() {
+    document.querySelectorAll('#step-list .ar-step-row').forEach((row, i) => {
+        row.querySelector('.ar-step-num').textContent = `${i + 1}.`;
+    });
+}
+
+function wireStepClick(row, span) {
+    span.addEventListener('click', () => enterStepEditMode(row, span));
+}
+
+function enterStepEditMode(row, span) {
+    if (row.querySelector('.ar-step-inline-input')) return;
+
+    const original  = span.textContent.trim();
+    let   committed = false;
+
+    const input = document.createElement('input');
+    input.type      = 'text';
+    input.className = 'ar-step-inline-input';
+    input.value     = original;
+    row.replaceChild(input, span);
+    input.focus();
+    input.select();
+
+    function commit(text) {
+        if (committed) return;
+        committed = true;
+        const newSpan = document.createElement('span');
+        newSpan.className   = 'ar-step-text';
+        newSpan.textContent = text || original;
+        wireStepClick(row, newSpan);
+        row.replaceChild(newSpan, input);
+    }
+
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter')  { e.preventDefault(); commit(input.value.trim()); }
+        if (e.key === 'Escape') { commit(original); }
+    });
+    input.addEventListener('blur', () => commit(input.value.trim()));
+}
+
+function buildStepRow(text) {
+    const row = document.createElement('div');
+    row.className = 'ar-step-row';
+
+    const num = document.createElement('span');
+    num.className = 'ar-step-num';
+
+    const span = document.createElement('span');
+    span.className   = 'ar-step-text';
+    span.textContent = text;
+    wireStepClick(row, span);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'ar-step-remove-btn';
+    removeBtn.title = 'Remove step';
+    removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+    removeBtn.addEventListener('click', () => { row.remove(); renumberSteps(); });
+
+    row.append(num, span, removeBtn);
+    return row;
+}
+
+function addStep(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const list = document.getElementById('step-list');
+    if (!list) return;
+    list.appendChild(buildStepRow(trimmed));
+    renumberSteps();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const stepList      = document.getElementById('step-list');
+    const stepInput     = document.getElementById('step-input');
+    const addStepBtn    = document.getElementById('add-step-btn');
+    const dirField      = document.getElementById('Directions');
+    const validationMsg = document.getElementById('step-validation-msg');
+
+    if (!stepList || !stepInput) return;
+
+    // Populate from saved directions on Edit Recipe
+    if (dirField && dirField.value.trim()) {
+        parseDirections(dirField.value).forEach(text => addStep(text));
+    }
+
+    if (addStepBtn) {
+        addStepBtn.addEventListener('click', function () {
+            addStep(stepInput.value);
+            stepInput.value = '';
+            stepInput.focus();
+            if (validationMsg) validationMsg.style.display = 'none';
+        });
+    }
+
+    stepInput.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        addStep(stepInput.value);
+        stepInput.value = '';
+        if (validationMsg) validationMsg.style.display = 'none';
+    });
+
+    const form = stepInput.closest('form');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const steps = stepList.querySelectorAll('.ar-step-text');
+            if (steps.length === 0) {
+                e.preventDefault();
+                if (validationMsg) validationMsg.style.display = '';
+                return;
+            }
+            if (dirField) dirField.value = serializeSteps();
+        });
+    }
+});
 
 // ── Image upload ──────────────────────────────────────────────────────────────
 

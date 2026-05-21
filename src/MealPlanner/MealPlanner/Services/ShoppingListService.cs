@@ -59,9 +59,10 @@ public class ShoppingListService : IShoppingListService
 
         var ingredientBase = _ingredientBaseRepo.FindOrCreateByName(itemName);
 
+        var measurementName = string.IsNullOrWhiteSpace(measurement) ? "Unit" : measurement.Trim();
         var measurementEntity = _measurementRepo.FindOrCreate(
-            m => m.Name.ToLower() == measurement.Trim().ToLower(),
-            () => new Measurement { Name = measurement.Trim() });
+            m => m.Name.ToLower() == measurementName.ToLower(),
+            () => new Measurement { Name = measurementName });
 
         var item = new ShoppingListItem
         {

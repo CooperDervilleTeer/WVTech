@@ -145,16 +145,18 @@
                    placeholder="Search recipes…" autocomplete="off" />
         </div>
 
-        <!-- Multi-select tag filter dropdown (populated by editMeal.js + recipeSearch.js) -->
-        <div id="tagFilterDropdown" class="tfd-container" style="margin-bottom:10px"></div>
-        <select id="tagFilter" style="display:none">
-            <option value="">All</option>
-        </select>
+        <!-- Tag filter chips — populated by editMeal.js / recipeSearch.js -->
+        <div class="search-tag-chips" id="tagFilterChips" style="margin-bottom:10px"></div>
+        <select id="tagFilter" style="display:none"><option value="">All</option></select>
 
         <div id="error" style="font-size:13px; color:var(--muted-text); min-height:0"></div>
 
         <!-- Recipe results -->
         <div id="recipeResults" style="display:flex; flex-direction:column; gap:6px; margin-top:4px"></div>
+
+        <button type="button" id="addSelectedRecipesBtn" class="nm-add-selected-btn" style="display:none">
+            Add selected
+        </button>
 
         <!-- Recipe result template -->
         <template id="recipeResult">
@@ -168,7 +170,8 @@
                     <div class="recipeRating"></div>
                 </div>
                 <div class="em-add-indicator">
-                    <i class="ti ti-plus"></i>
+                    <i class="ti ti-plus em-indicator-plus"></i>
+                    <i class="ti ti-check em-indicator-check"></i>
                 </div>
                 <div class="row-end" style="display:none"></div>
             </div>

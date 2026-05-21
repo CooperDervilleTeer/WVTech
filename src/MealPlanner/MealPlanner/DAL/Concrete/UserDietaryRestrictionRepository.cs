@@ -13,6 +13,13 @@ public class UserDietaryRestrictionRepository : IUserDietaryRestrictionRepositor
         _context = context;
     }
 
+    public async Task<List<DietaryRestriction>> GetAllDietaryRestrictionsAsync()
+    {
+        return await _context.DietaryRestrictions
+            .OrderBy(d => d.Name)
+            .ToListAsync();
+    }
+
     public async Task<List<UserDietaryRestriction>> GetByUserIdAsync(string userId)
     {
         return await _context.UserDietaryRestrictions

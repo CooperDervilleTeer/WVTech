@@ -102,10 +102,9 @@ public class FoodEntriesController : Controller
         {
             userRecipes = await _userRecipeRepository.GetUserOwnedRecipesByUserIdAsync(user.Id);
         }
-        var seededRecipes = (_recipeRepository.ReadAll() ?? []).Where(r => r.Id < 0);
-        var allRecipes = userRecipes.Concat(seededRecipes).DistinctBy(r => r.Id);
-        IEnumerable<RecipeViewModel> userRecipeVMs = allRecipes.Select(ViewModelService.RecipeToRecipeVM);
-        foreach (RecipeViewModel vm in userRecipeVMs)
+
+        var recipeVMs = userRecipes.Select(ViewModelService.RecipeToRecipeVM).ToList();
+        foreach (RecipeViewModel vm in recipeVMs)
         {
             if (vm.Id == null) continue;
             vm.VotePercentage = await _userRecipeRepository.GetRecipeVotePercentage(vm.Id ?? 0);
@@ -113,7 +112,7 @@ public class FoodEntriesController : Controller
 
         return View(new RecipesAndShoppingViewModel
         {
-            Recipes = userRecipeVMs,
+            Recipes = recipeVMs,
         });
     }
 

@@ -1,11 +1,9 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MealPlanner.Models;
 using MealPlanner.ViewModels;
 using MealPlanner.DAL.Abstract;
-using MealPlanner.DAL.Concrete;
 using MealPlanner.Services;
 using Microsoft.AspNetCore.Identity;
 
@@ -15,38 +13,38 @@ namespace MealPlanner.Controllers
     [Authorize]
     public class UserSettingsController : Controller
     {
-        private readonly MealPlannerDBContext _db;
         private readonly IUserSettingsRepository _userSettings;
         private readonly IUserSettingsService _userSettingsService;
         private readonly ITagRepository _tagRepository;
         private readonly IUserFoodPreferenceRepository _foodPrefRepository;
-        private readonly IUserNutritionPreferenceRepository _nutritionRepo;
-        private readonly IUserDietaryRestrictionRepository _dietaryRepo;
+        private readonly IUserNutritionPreferenceRepository _nutritionPrefRepository;
+        private readonly IUserDietaryRestrictionRepository _userDietaryRestrictionRepository;
         private readonly UserManager<User> _userManager;
 
-        public UserSettingsController(MealPlannerDBContext db, IUserSettingsRepository userSettings, IUserSettingsService userSettingsService, ITagRepository tagRepository, IUserFoodPreferenceRepository foodPrefRepository, IUserNutritionPreferenceRepository nutritionRepo, IUserDietaryRestrictionRepository dietaryRepo, UserManager<User> userManager)
+        public UserSettingsController(IUserSettingsRepository userSettings, IUserSettingsService userSettingsService, ITagRepository tagRepository, IUserFoodPreferenceRepository foodPrefRepository, IUserNutritionPreferenceRepository nutritionPrefRepository, IUserDietaryRestrictionRepository userDietaryRestrictionRepository, UserManager<User> userManager)
         {
-            _db = db;
             _userSettings = userSettings;
             _userSettingsService = userSettingsService;
             _tagRepository = tagRepository;
             _foodPrefRepository = foodPrefRepository;
-            _nutritionRepo = nutritionRepo;
-            _dietaryRepo = dietaryRepo;
+            _nutritionPrefRepository = nutritionPrefRepository;
+            _userDietaryRestrictionRepository = userDietaryRestrictionRepository;
             _userManager = userManager;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string section = "food")
+        public async Task<IActionResult> Index(string section = "profile")
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Challenge();
 
             var currentPrefs   = await _foodPrefRepository.GetFoodPreferenceNamesAsync(userId);
             var availableTags  = await _tagRepository.GetTagNamesAsync();
-            var nutritionPref   = await _nutritionRepo.GetUsersNutritionPreferenceAsync(userId);
-            var allRestrictions = await _dietaryRepo.GetAllAsync();
-            var selectedIds     = await _dietaryRepo.GetSelectedIdsByUserIdAsync(userId);
+            var nutritionPref    = await _nutritionPrefRepository.GetUsersNutritionPreferenceAsync(userId);
+            var allRestrictions  = await _userDietaryRestrictionRepository.GetAllDietaryRestrictionsAsync();
+            var selectedIds      = (await _userDietaryRestrictionRepository.GetByUserIdAsync(userId))
+                                       .Select(x => x.DietaryRestrictionId)
+                                       .ToList();
 
             var user = await _userManager.FindByIdAsync(userId);
             var profile = await _userSettings.GetByUserIdAsync(userId);
@@ -82,7 +80,6 @@ namespace MealPlanner.Controllers
             if (vm.NewPreferences.Count > 0)
                 await _foodPrefRepository.AddFoodPreferencesAsync(userId, vm.NewPreferences);
 
-            _db.SaveChanges();
             if (TempData is not null) TempData["Message"] = "Food preferences saved.";
             return RedirectToAction(nameof(Index));
         }
@@ -95,7 +92,6 @@ namespace MealPlanner.Controllers
             if (string.IsNullOrEmpty(userId)) return Challenge();
 
             await _foodPrefRepository.RemoveFoodPreferenceAsync(userId, tagName);
-            _db.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
 
@@ -138,25 +134,15 @@ namespace MealPlanner.Controllers
             user.FullName = model.FullName.Trim();
             await _userManager.UpdateAsync(user);
 
-            var profile = await _userSettings.FindOrCreateAsync(userId);
-
-            profile.DisplayHandle = string.IsNullOrWhiteSpace(model.DisplayHandle)
-                ? null
-                : model.DisplayHandle.Trim().TrimStart('@');
-
-            if (model.RemovePhoto)
-                profile.ProfilePictureUrl = null;
-            else if (!string.IsNullOrEmpty(model.PhotoData))
-                profile.ProfilePictureUrl = model.PhotoData;
-
-            await _db.SaveChangesAsync();
+            await _userSettings.UpsertProfileAsync(userId, model.DisplayHandle, model.RemovePhoto, model.PhotoData);
+            var profile = await _userSettings.GetByUserIdAsync(userId);
 
             var nameParts = user.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var initials = nameParts.Length >= 2
                 ? $"{char.ToUpper(nameParts[0][0])}{char.ToUpper(nameParts[^1][0])}"
                 : (nameParts.Length == 1 ? char.ToUpper(nameParts[0][0]).ToString() : "");
 
-            var effectiveDisplayName = !string.IsNullOrWhiteSpace(profile.DisplayHandle)
+            var effectiveDisplayName = !string.IsNullOrWhiteSpace(profile?.DisplayHandle)
                 ? profile.DisplayHandle
                 : user.FullName;
 
@@ -164,10 +150,10 @@ namespace MealPlanner.Controllers
             {
                 success = true,
                 initials,
-                photoUrl = profile.ProfilePictureUrl ?? "",
+                photoUrl = profile?.ProfilePictureUrl ?? "",
                 fullName = user.FullName,
                 displayName = effectiveDisplayName,
-                handle = profile.DisplayHandle ?? ""
+                handle = profile?.DisplayHandle ?? ""
             });
         }
 
@@ -181,7 +167,7 @@ namespace MealPlanner.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Json(new { success = false });
 
-            await _dietaryRepo.SetForUserAsync(userId, selectedIds ?? []);
+            await _userDietaryRestrictionRepository.SetForUserAsync(userId, selectedIds ?? []);
             return Json(new { success = true });
         }
 
@@ -194,23 +180,9 @@ namespace MealPlanner.Controllers
 
             var chosen = vm.Restrictions
                 .Where(x => x.IsSelected)
-                .Select(x => x.DietaryRestrictionId)
-                .ToHashSet();
+                .Select(x => x.DietaryRestrictionId);
 
-            var existing = await _db.UserDietaryRestrictions
-                .Where(x => x.UserId == userId)
-                .ToListAsync();
-
-            _db.UserDietaryRestrictions.RemoveRange(existing);
-
-            var newRows = chosen.Select(id => new UserDietaryRestriction
-            {
-                UserId = userId,
-                DietaryRestrictionId = id
-            });
-
-            await _db.UserDietaryRestrictions.AddRangeAsync(newRows);
-            await _db.SaveChangesAsync();
+            await _userDietaryRestrictionRepository.SetForUserAsync(userId, chosen);
 
             TempData["Message"] = "Dietary restrictions saved.";
             return RedirectToAction(nameof(Index), new { section = "dietary" });
@@ -226,21 +198,7 @@ namespace MealPlanner.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Challenge();
 
-            var pref = await _db.UserNutritionPreferences
-                .FirstOrDefaultAsync(x => x.UserId == userId);
-
-            if (pref == null)
-            {
-                pref = new UserNutritionPreference { UserId = userId };
-                _db.UserNutritionPreferences.Add(pref);
-            }
-
-            pref.CalorieTarget = vm.CalorieTarget;
-            pref.ProteinTarget = vm.ProteinTarget;
-            pref.CarbTarget    = vm.CarbTarget;
-            pref.FatTarget     = vm.FatTarget;
-
-            await _db.SaveChangesAsync();
+            await _nutritionPrefRepository.SaveNutritionPreferenceAsync(userId, vm.CalorieTarget, vm.ProteinTarget, vm.CarbTarget, vm.FatTarget);
 
             TempData["Message"] = "Nutrition goals saved.";
             return RedirectToAction(nameof(Index), new { section = "nutrition" });

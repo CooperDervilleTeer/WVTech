@@ -66,7 +66,39 @@ public class RecipeRepositoryTests
         // Assert
         Assert.That(results.First().Name, Is.EqualTo("Oatmeal Cookies"));
     }
-    
+
+    [Test]
+    public async Task GetRecipesByExternalUrisAsync_ReturnsMatchingRecipesWithTags()
+    {
+        // Arrange — two externally-cached recipes
+        using (var seed = CreateContext())
+        {
+            seed.Add(new Recipe
+            {
+                Id = 101, Name = "Cached A", Directions = "",
+                ExternalUri = "http://edamam/a",
+                Tags = [new Tag { Name = "ExtUriTestTag" }]
+            });
+            seed.Add(new Recipe
+            {
+                Id = 102, Name = "Cached B", Directions = "",
+                ExternalUri = "http://edamam/b", Tags = []
+            });
+            seed.SaveChanges();
+        }
+
+        MealPlannerDBContext context = CreateContext();
+        RecipeRepository repo = new RecipeRepository(context);
+
+        // Act — one URI matches, one does not
+        List<Recipe> results = await repo.GetRecipesByExternalUrisAsync(
+            ["http://edamam/a", "http://edamam/missing"]);
+
+        // Assert — only the matching recipe is returned, with its tags loaded
+        Assert.That(results.Select(r => r.Id), Is.EquivalentTo(new[] { 101 }));
+        Assert.That(results.Single().Tags.Select(t => t.Name), Does.Contain("ExtUriTestTag"));
+    }
+
     [Test]
     public void GetRecipesByName_ReturnsEmptyListIfNoneFound()
     {   

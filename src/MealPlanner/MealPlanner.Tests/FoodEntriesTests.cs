@@ -4,6 +4,7 @@ using MealPlanner.Models;
 using MealPlanner.Services;
 using MealPlanner.ViewModels;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -83,6 +84,11 @@ public class FoodEntriesTests
             blobContainer: null,
             externalRecipeService.Object,
             nutritionService.Object);
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
     }
 
     [TearDown]

@@ -51,8 +51,16 @@
                 <span class="ar-card-icon"><i class="ti ti-list"></i></span>
                 <span class="ar-card-label">Instructions</span>
             </div>
-            <textarea class="ar-input ar-textarea" placeholder="Write your instructions here…"
-                      asp-for="Directions" required></textarea>
+            <input type="hidden" id="Directions" name="Directions" value="" />
+            <div id="step-list"></div>
+            <div class="ar-step-add-row">
+                <input type="text" id="step-input" class="ar-input ar-step-input"
+                       placeholder="Describe the next step…" />
+                <button type="button" id="add-step-btn" class="ar-teal-btn">Add step</button>
+            </div>
+            <p id="step-validation-msg" class="ar-step-validation-msg" style="display:none;">
+                Please add at least one step.
+            </p>
         </div>
 
         <!-- Nutrients -->
@@ -149,7 +157,7 @@
         <!-- Actions -->
         <div class="ar-action-row">
             <a href="@Url.Action("Recipes", "FoodEntries")" class="ar-ghost-btn">Cancel</a>
-            <button type="submit" class="ar-submit-btn buttonBlue">
+            <button type="submit" class="ar-submit-btn">
                 <i class="ti ti-check"></i>
                 Add Recipe
             </button>

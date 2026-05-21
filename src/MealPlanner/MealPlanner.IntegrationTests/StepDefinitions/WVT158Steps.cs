@@ -111,7 +111,7 @@ public class WVT158Steps
         _wait.Until(d => d.FindElement(By.CssSelector("input[name='amount']"))).SendKeys(ManualAmount.ToString());
         _driver.FindElement(By.CssSelector("select[name='measurement']")).FindElement(By.XPath(".//option[@value='Count']")).Click();
         _driver.FindElement(By.CssSelector("input[name='itemName']")).SendKeys(IngredientName);
-        _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
+        _driver.FindElement(By.CssSelector("button[type='submit'].sl-add-btn")).Click();
 
         // Wait for the POST navigation to start, then fully complete back on the shopping list
         try

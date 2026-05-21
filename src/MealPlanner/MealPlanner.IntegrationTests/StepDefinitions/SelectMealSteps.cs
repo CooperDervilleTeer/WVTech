@@ -173,6 +173,15 @@ public class SelectMealSteps
             ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", removeBtn);
         }
 
+        // Wait for navigation to start, then complete (readyState check alone fires on the current page)
+        try
+        {
+            new WebDriverWait(_driver, TimeSpan.FromSeconds(3)).Until(driver =>
+                ((IJavaScriptExecutor)driver)
+                    .ExecuteScript("return document.readyState").ToString() != "complete");
+        }
+        catch (WebDriverTimeoutException) { }
+
         new WebDriverWait(_driver, TimeSpan.FromSeconds(10)).Until(driver =>
             ((IJavaScriptExecutor)driver)
                 .ExecuteScript("return document.readyState").ToString() == "complete");

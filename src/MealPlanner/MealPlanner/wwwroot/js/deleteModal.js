@@ -28,5 +28,9 @@ function showDeleteModal(title, onConfirm) {
 
     confirmBtn.addEventListener('click', onYes);
     cancelBtn.addEventListener('click', close);
-    modal.addEventListener('click', onBackdrop);
+    // Defer by one tick so the mouseup from the triggering click doesn't
+    // immediately fire onBackdrop and close the modal before the user sees it.
+    setTimeout(function() {
+        modal.addEventListener('click', onBackdrop);
+    }, 0);
 }

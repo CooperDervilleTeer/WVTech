@@ -18,6 +18,12 @@ namespace Mealplanner.IntegrationTests
         private string _updatedTitle = null!;
         private string _addedRecipeName = null!;
         private string _userId = null!;
+        private readonly ScenarioContext _scenarioContext;
+
+        public WVT127Steps(ScenarioContext scenarioContext)
+        {
+            _scenarioContext = scenarioContext;
+        }
 
         // Runs before each scenerio
         [BeforeScenario]
@@ -34,6 +40,7 @@ namespace Mealplanner.IntegrationTests
             using var ctx = BDDSetup.CreateContext();
             _userId = ctx.Users.First(u => u.NormalizedEmail == "JACK@FAKEEMAIL.COM").Id;
             _mealId = CreateTestMeal(_userId);
+            _scenarioContext["MealId"] = _mealId;
         }
 
         [Given("the edit meal page is open")]
@@ -118,6 +125,15 @@ namespace Mealplanner.IntegrationTests
                 .ExecuteScript("arguments[0].scrollIntoView(true);", firstResult);
             _addedRecipeName = firstResult.FindElement(By.CssSelector(".recipeName")).Text;
             firstResult.Click();
+
+            // Recipe search uses multi-select — click "Add selected" to commit the selection
+            // to #mealRecipeList so subsequent steps can find it.
+            var addBtn = _wait.Until(d =>
+            {
+                var btn = d.FindElement(By.Id("addSelectedRecipesBtn"));
+                return btn.Displayed ? btn : null;
+            });
+            addBtn!.Click();
         }
 
         // Then
