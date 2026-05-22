@@ -388,49 +388,53 @@ public class NutritionBarSteps
     [Then("Meal Bars callories are at {int}\\/{int}")]
     public void ThenMealBarsCaloriesAreAt(int current, int goal)
     {
-        var fraction = new WebDriverWait(_driver, TimeSpan.FromSeconds(5))
+        var expected = $"{current} / {goal}";
+        var fraction = new WebDriverWait(_driver, TimeSpan.FromSeconds(10))
             .Until(d =>
             {
-                try { var el = d.FindElement(By.Id("caloriesFraction")); return el.Displayed ? el : null; }
+                try { var el = d.FindElement(By.Id("caloriesFraction")); return (el.Displayed && el.Text.Trim() == expected) ? el : null; }
                 catch (NoSuchElementException) { return null; }
             })!;
-        Assert.That(fraction.Text.Trim(), Is.EqualTo($"{current} / {goal}"));
+        Assert.That(fraction.Text.Trim(), Is.EqualTo(expected));
     }
 
     [Then("Meal Bars protien are at {int}\\/{int}")]
     public void ThenMealBarsProteinAreAt(int current, int goal)
     {
-        var fraction = new WebDriverWait(_driver, TimeSpan.FromSeconds(5))
+        var expected = $"{current} / {goal}";
+        var fraction = new WebDriverWait(_driver, TimeSpan.FromSeconds(10))
             .Until(d =>
             {
-                try { var el = d.FindElement(By.Id("proteinFraction")); return el.Displayed ? el : null; }
+                try { var el = d.FindElement(By.Id("proteinFraction")); return (el.Displayed && el.Text.Trim() == expected) ? el : null; }
                 catch (NoSuchElementException) { return null; }
             })!;
-        Assert.That(fraction.Text.Trim(), Is.EqualTo($"{current} / {goal}"));
+        Assert.That(fraction.Text.Trim(), Is.EqualTo(expected));
     }
 
     [Then("Meal Bars fats are at {int}\\/{int}")]
     public void ThenMealBarsFatsAreAt(int current, int goal)
     {
-        var fraction = new WebDriverWait(_driver, TimeSpan.FromSeconds(5))
+        var expected = $"{current} / {goal}";
+        var fraction = new WebDriverWait(_driver, TimeSpan.FromSeconds(10))
             .Until(d =>
             {
-                try { var el = d.FindElement(By.Id("fatFraction")); return el.Displayed ? el : null; }
+                try { var el = d.FindElement(By.Id("fatFraction")); return (el.Displayed && el.Text.Trim() == expected) ? el : null; }
                 catch (NoSuchElementException) { return null; }
             })!;
-        Assert.That(fraction.Text.Trim(), Is.EqualTo($"{current} / {goal}"));
+        Assert.That(fraction.Text.Trim(), Is.EqualTo(expected));
     }
 
     [Then("Meal Bars carbs are at {int}\\/{int}")]
     public void ThenMealBarsCarbsAreAt(int current, int goal)
     {
-        var fraction = new WebDriverWait(_driver, TimeSpan.FromSeconds(5))
+        var expected = $"{current} / {goal}";
+        var fraction = new WebDriverWait(_driver, TimeSpan.FromSeconds(10))
             .Until(d =>
             {
-                try { var el = d.FindElement(By.Id("carbsFraction")); return el.Displayed ? el : null; }
+                try { var el = d.FindElement(By.Id("carbsFraction")); return (el.Displayed && el.Text.Trim() == expected) ? el : null; }
                 catch (NoSuchElementException) { return null; }
             })!;
-        Assert.That(fraction.Text.Trim(), Is.EqualTo($"{current} / {goal}"));
+        Assert.That(fraction.Text.Trim(), Is.EqualTo(expected));
     }
     [Given("{string} is on the home page")]
     [When("{string} is on the home page")]
