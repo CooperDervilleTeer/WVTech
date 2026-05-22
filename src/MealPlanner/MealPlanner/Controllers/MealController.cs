@@ -526,7 +526,11 @@ public class MealController : Controller
             return Forbid();
         }
 
-        if (meal.RepeatRule == "Weekly" && !deleteAll)
+        if (meal.RepeatRule == "Weekly" && deleteAll)
+        {
+            _context.Meals.Remove(meal);
+        }
+        else
         {
             var exclusionDate = DateTime.TryParse(date, out var pd) ? pd.Date : DateTime.Today;
             var alreadyExcluded = await _context.MealExclusions
@@ -535,10 +539,6 @@ public class MealController : Controller
             {
                 _context.MealExclusions.Add(new MealExclusion { MealId = meal.Id, ExclusionDate = exclusionDate });
             }
-        }
-        else
-        {
-            _context.Meals.Remove(meal);
         }
 
         await _context.SaveChangesAsync();
