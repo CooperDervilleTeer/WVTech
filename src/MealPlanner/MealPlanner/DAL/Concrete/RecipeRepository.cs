@@ -11,6 +11,8 @@ public class RecipeRepository : Repository<Recipe>, IRecipeRepository
     DbSet<IngredientBase> _ingredientBaseSet;
     DbSet<Measurement> _measurementSet;
     DbSet<Tag> _tagSet;
+    DbSet<Ingredient> _ingredientSet;
+    DbSet<UserRecipe> _userRecipeSet;
 
     public RecipeRepository(MealPlannerDBContext context)
         : base(context)
@@ -18,6 +20,8 @@ public class RecipeRepository : Repository<Recipe>, IRecipeRepository
         _ingredientBaseSet = context.Set<IngredientBase>();
         _measurementSet = context.Set<Measurement>();
         _tagSet = context.Set<Tag>();
+        _ingredientSet = context.Set<Ingredient>();
+        _userRecipeSet = context.Set<UserRecipe>();
     }
 
     public List<Recipe> GetRecipesByName(string name)
@@ -98,6 +102,9 @@ public class RecipeRepository : Repository<Recipe>, IRecipeRepository
                 }
                 catch (InvalidOperationException)
                 {
+                    if (string.IsNullOrEmpty(i.Measurement.Abbreviation))
+                        i.Measurement.Abbreviation = i.Measurement.Name;
+
                     var duplicate = !newMeasurements.Add(i.Measurement);
                     if (duplicate)
                     {
@@ -179,5 +186,13 @@ public class RecipeRepository : Repository<Recipe>, IRecipeRepository
             .Include(r => r.Tags)
             .Include(r => r.Ingredients)
             .ToListAsync();
+    }
+
+    public async Task DeleteWithDependenciesAsync(Recipe recipe)
+    {
+        _ingredientSet.RemoveRange(recipe.Ingredients);
+        var userRecipes = await _userRecipeSet.Where(ur => ur.RecipeId == recipe.Id).ToListAsync();
+        _userRecipeSet.RemoveRange(userRecipes);
+        _dbset.Remove(recipe);
     }
 }

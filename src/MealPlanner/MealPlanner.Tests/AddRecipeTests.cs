@@ -33,7 +33,7 @@ namespace MealPlanner.Tests
             var externalRecipeService = new Mock<IExternalRecipeService>();
             var mockEnv = new Mock<IWebHostEnvironment>();
             mockEnv.Setup(e => e.WebRootPath).Returns(Path.GetTempPath());
-            _controller = new FoodEntriesController(_recipeRepository, tagRepo.Object, userRecipeRepo.Object, _context, registrationService.Object, mockEnv.Object, blobContainer: null, externalRecipeService.Object);
+            _controller = new FoodEntriesController(_recipeRepository, tagRepo.Object, userRecipeRepo.Object, _context, registrationService.Object, Mock.Of<IMeasurementRepository>(), mockEnv.Object, blobContainer: null, externalRecipeService.Object);
         }
 
         //handels the cleaning up after every test
@@ -51,7 +51,7 @@ namespace MealPlanner.Tests
             {
                 Name = "Test Recipe",
                 Ingredients = ["sugar", "flour"],
-                IngredientAmounts = [1, 2],
+                IngredientAmounts = ["1", "2"],
                 IngredientMeasurements = ["cup", "cups"],
                 Directions = "Mix ingredients and bake 20 mins",
                 Calories = 0,
@@ -83,7 +83,7 @@ namespace MealPlanner.Tests
             {
                 Name = "Test Recipe",
                 Ingredients = ["sugar", "flour"],
-                IngredientAmounts = [1, 2],
+                IngredientAmounts = ["1", "2"],
                 IngredientMeasurements = ["cup", "cups"],
                 Directions = "Mix ingredients and bake 20 mins"
             };
@@ -102,7 +102,7 @@ namespace MealPlanner.Tests
             {
                 Name = "1Name",
                 Ingredients = ["1Entry1", "1Entry2"],
-                IngredientAmounts = [0, 0],
+                IngredientAmounts = ["0", "0"],
                 IngredientMeasurements = ["", ""],
                 Directions = "1Directions",
                 Calories = 0,
@@ -115,7 +115,7 @@ namespace MealPlanner.Tests
             {
                 Name = "2Name",
                 Ingredients = ["2Entry1", "2Entry2"],
-                IngredientAmounts = [0, 0],
+                IngredientAmounts = ["0", "0"],
                 IngredientMeasurements = ["", ""],
                 Directions = "2Directions",
                 Calories = 20,

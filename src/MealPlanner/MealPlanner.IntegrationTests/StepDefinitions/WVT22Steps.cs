@@ -121,7 +121,7 @@ public class WVT22Steps
             var ingredientBase = ctx.Set<IngredientBase>().FirstOrDefault(b => b.Name == "chicken broth")
                 ?? ctx.Set<IngredientBase>().Add(new IngredientBase { Name = "chicken broth" }).Entity;
             var measurement = ctx.Set<Measurement>().FirstOrDefault(m => m.Name == "Cup(s)")
-                ?? ctx.Set<Measurement>().Add(new Measurement { Name = "Cup(s)" }).Entity;
+                ?? ctx.Set<Measurement>().Add(new Measurement { Name = "Cup(s)", Abbreviation = "Cup(s)" }).Entity;
             ctx.SaveChanges();
             ctx.ShoppingListItems.Add(new ShoppingListItem
             {

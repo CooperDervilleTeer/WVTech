@@ -68,6 +68,7 @@ public class WVT51NutritionSummaryTests
             new Mock<IUserRecipeRepository>().Object,
             controllerContext,
             new Mock<IRegistrationService>().Object,
+            Mock.Of<IMeasurementRepository>(),
             new Mock<IWebHostEnvironment>().Object,
             nutritionProgressService: _nutritionServiceMock.Object);
 
@@ -158,6 +159,7 @@ public class WVT51NutritionSummaryTests
             new Mock<IUserRecipeRepository>().Object,
             ctx,
             new Mock<IRegistrationService>().Object,
+            Mock.Of<IMeasurementRepository>(),
             new Mock<IWebHostEnvironment>().Object);
 
         controller.ControllerContext = new ControllerContext

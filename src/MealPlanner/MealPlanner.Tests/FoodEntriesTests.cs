@@ -80,6 +80,7 @@ public class FoodEntriesTests
             userRecipeRepo.Object,
             controllerContext,
             registrationService.Object,
+            Mock.Of<IMeasurementRepository>(),
             mockEnv.Object,
             blobContainer: null,
             externalRecipeService.Object,

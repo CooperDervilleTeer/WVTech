@@ -20,12 +20,12 @@ namespace MealPlanner.Models
         public DbSet<Tag> Tags { get; set; }
         public DbSet<UserFoodPreference> UserFoodPreferences { get; set; }
         public DbSet<ShoppingListItem> ShoppingListItems { get; set; }
+        public DbSet<DismissedShoppingItem> DismissedShoppingItems { get; set; }
         public DbSet<MealCompletion> MealCompletions { get; set; }
         public DbSet<MealExclusion> MealExclusions { get; set; }
         public DbSet<KrogerExport> KrogerExports { get; set; }
         public DbSet<KrogerExportItem> KrogerExportItems { get; set; }
         public DbSet<MealAutoRemovedIngredient> MealAutoRemovedIngredients { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

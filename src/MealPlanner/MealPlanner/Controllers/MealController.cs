@@ -217,6 +217,7 @@ public class MealController : Controller
         var newMeal = meals.FirstOrDefault();
         if (newMeal == null || newMeal.Recipes.IsNullOrEmpty()) return NotFound();
 
+        newMeal.IsGenerated = true;
         newMeal = _mealRepo.CreateOrUpdate(newMeal);
         _context.SaveChanges();
         Response.Cookies.Delete("ShoppingListSynced");
@@ -236,7 +237,10 @@ public class MealController : Controller
         var meals = await _recommendationService.GetRecommendedMealsForUser(user, selectedDate, model);
 
         foreach (var meal in meals)
+        {
+            meal.IsGenerated = true;
             _mealRepo.CreateOrUpdate(meal);
+        }
         _context.SaveChanges();
 
         TempData["GeneratedMealIds"] = string.Join(",", meals.Select(m => m.Id));
@@ -522,7 +526,11 @@ public class MealController : Controller
             return Forbid();
         }
 
-        if (meal.RepeatRule == "Weekly" && !deleteAll)
+        if (meal.RepeatRule == "Weekly" && deleteAll)
+        {
+            _context.Meals.Remove(meal);
+        }
+        else
         {
             var exclusionDate = DateTime.TryParse(date, out var pd) ? pd.Date : DateTime.Today;
             var alreadyExcluded = await _context.MealExclusions
@@ -531,10 +539,6 @@ public class MealController : Controller
             {
                 _context.MealExclusions.Add(new MealExclusion { MealId = meal.Id, ExclusionDate = exclusionDate });
             }
-        }
-        else
-        {
-            _context.Meals.Remove(meal);
         }
 
         await _context.SaveChangesAsync();

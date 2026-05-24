@@ -1,0 +1,95 @@
+@model List<MealPlanner.Models.Measurement>
+
+@{
+    ViewData["Title"] = "Measurements";
+}
+
+<div class="back1">
+    <h1 class="back1Title">Measurements</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success text-center">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger text-center">@TempData["Error"]</div>
+    }
+
+    <div class="back2 mb-4">
+        <h2 class="back1Title">Add Measurement</h2>
+        <form asp-action="Create" method="post" class="d-flex align-items-center flex-wrap gap-2">
+            @Html.AntiForgeryToken()
+            <input type="text" name="name" class="back2-textbox-partial" placeholder="Name (e.g. Kilogram)" maxlength="32" required style="min-width: 180px; flex: 1 1 180px;" />
+            <input type="text" name="abbreviation" class="back2-textbox-partial" placeholder="Abbreviation (e.g. kg)" maxlength="16" required style="min-width: 120px; flex: 0 1 120px;" />
+            <button type="submit" class="buttonGreenInline" style="flex-shrink: 0;">
+                <h4 class="buttonText">Add</h4>
+            </button>
+        </form>
+    </div>
+
+    <div class="back2">
+        @if (Model.Any())
+        {
+            <table class="table mb-0" style="color: var(--text-primary);">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Abbreviation</th>
+                        <th style="width: 1px; white-space: nowrap;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in Model)
+                    {
+                        <tr id="row-@m.Id">
+                            <td>
+                                <span class="measurement-display-name">@m.Name</span>
+                                <input type="text" class="back2-textbox-partial measurement-edit-name" value="@m.Name" maxlength="32" style="display:none; width: 100%;" />
+                            </td>
+                            <td>
+                                <span class="measurement-display-abbrev">@m.Abbreviation</span>
+                                <input type="text" class="back2-textbox-partial measurement-edit-abbrev" value="@m.Abbreviation" maxlength="16" style="display:none; width: 100%;" />
+                            </td>
+                            <td style="white-space: nowrap;">
+                                <div class="measurement-view-actions d-flex gap-2">
+                                    <button type="button" class="buttonBlueInline btn-inline-sm measurement-edit-btn" data-id="@m.Id">
+                                        <h4 class="buttonText">Edit</h4>
+                                    </button>
+                                    <form asp-action="Delete" method="post" class="m-0 d-inline"
+                                          onsubmit="return confirm('Delete measurement \'@m.Name\'?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@m.Id" />
+                                        <button type="submit" class="btn btn-danger btn-sm rounded-4 px-3">Delete</button>
+                                    </form>
+                                </div>
+                                <div class="measurement-edit-actions d-flex gap-2" style="display:none !important;">
+                                    <form asp-action="Edit" method="post" class="measurement-save-form m-0 d-flex gap-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@m.Id" />
+                                        <input type="hidden" class="measurement-save-name" name="name" value="@m.Name" />
+                                        <input type="hidden" class="measurement-save-abbrev" name="abbreviation" value="@m.Abbreviation" />
+                                        <button type="submit" class="buttonGreenInline btn-inline-sm">
+                                            <h4 class="buttonText">Save</h4>
+                                        </button>
+                                    </form>
+                                    <button type="button" class="buttonBlueInline btn-inline-sm measurement-cancel-btn" data-id="@m.Id">
+                                        <h4 class="buttonText">Cancel</h4>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-center fs-5 mb-0">No measurements found. Add one above.</p>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/measurements.js" asp-append-version="true"></script>
+}

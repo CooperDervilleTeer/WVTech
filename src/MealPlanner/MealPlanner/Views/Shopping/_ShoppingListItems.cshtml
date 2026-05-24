@@ -1,0 +1,60 @@
+@model MealPlanner.ViewModels.ShoppingListViewModel
+
+@if (Model.Items.Any())
+{
+    @foreach (var item in Model.Items)
+    {
+        var amount = item.DisplayAmount ?? MealPlanner.Services.FractionParser.FormatAmount(item.Amount);
+        var abbrev = string.IsNullOrEmpty(item.Measurement.Abbreviation) ? item.Measurement.Name : item.Measurement.Abbreviation;
+        var slashPos = amount.IndexOf('/');
+        int denominator = slashPos > 0 && int.TryParse(amount[(slashPos + 1)..].Trim(), out int parsedDen) ? parsedDen : 1;
+        bool amountIsDecimal = amount.Contains('.');
+        var combined = $"{amount} {abbrev}";
+        <div class="sl-item-row">
+            <div class="sl-qty-area">
+                <form asp-action="UpdateItemAmount" method="post" class="sl-qty-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ingredientBaseId" value="@item.IngredientBase.Id" />
+                    <div class="qty-controls sl-qty-controls">
+                        <button type="button" class="qty-decrement sl-qty-step-btn">−</button>
+                        <input type="text"
+                               class="qty-input measurement-inline-input"
+                               value="@combined"
+                               data-original="@combined"
+                               data-original-amount="@amount"
+                               data-original-measurement="@abbrev"
+                               data-measurement="@abbrev"
+                               data-item-id="@item.Id"
+                               data-denominator="@denominator"
+                               data-is-decimal="@amountIsDecimal.ToString().ToLower()" />
+                        <button type="button" class="qty-increment sl-qty-step-btn">+</button>
+                    </div>
+                </form>
+            </div>
+            <div class="sl-name-area">
+                <span class="item-display sl-item-name"
+                      data-name="@item.IngredientBase.Display()"
+                      data-amount="@item.Amount"
+                      data-measurement="@abbrev">@item.IngredientBase.Display()</span>
+            </div>
+            <form asp-action="RemoveItem" method="post" class="sl-remove-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="itemId" value="@item.Id" />
+                <button type="submit" class="sl-remove-btn" title="Remove item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    }
+}
+else
+{
+    <div class="sl-empty-state">
+        <i class="ti ti-shopping-cart sl-empty-icon"></i>
+        <p class="sl-empty">Your shopping list is empty.</p>
+    </div>
+}

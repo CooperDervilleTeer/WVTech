@@ -39,7 +39,7 @@ public class KrogerExportService : IKrogerExportService
         var cartItems = found.Select(r => new KrogerCartItem { Upc = r.match!.Upc, Quantity = r.match.Quantity }).ToList();
 
         if (cartItems.Count == 0)
-            return KrogerExportResult.Of(KrogerExportOutcome.NoMatchesFound);
+            return new KrogerExportResult { Outcome = KrogerExportOutcome.NoMatchesFound, Skipped = skipped };
 
         var success = await _krogerService.ExportCartAsync(cartItems, krogerToken);
         if (!success)

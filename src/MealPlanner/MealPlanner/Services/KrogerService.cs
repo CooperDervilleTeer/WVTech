@@ -48,13 +48,13 @@ public class KrogerService : IKrogerService
         return JsonSerializer.Deserialize<KrogerTokenResponse>(json, JsonOptions);
     }
 
-    public async Task<List<KrogerStoreInfo>> FindNearestStoresAsync(string zipCode, int limit = 5)
+    public async Task<List<KrogerStoreInfo>> FindNearestStoresAsync(string zipCode, int radiusInMiles = 50, int limit = 5)
     {
         var token = await GetClientCredentialsTokenAsync();
         if (token == null) return [];
 
         var request = new HttpRequestMessage(HttpMethod.Get,
-            $"locations?filter.zipCode.near={Uri.EscapeDataString(zipCode)}&filter.limit={limit}&filter.radiusInMiles=50");
+            $"locations?filter.zipCode.near={Uri.EscapeDataString(zipCode)}&filter.limit={limit}&filter.radiusInMiles={radiusInMiles}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await _httpClient.SendAsync(request);

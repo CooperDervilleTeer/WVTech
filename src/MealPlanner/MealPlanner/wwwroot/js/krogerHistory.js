@@ -147,29 +147,21 @@ async function toggleEntry(entry, exportId) {
       btn.disabled = true;
       btn.textContent = "Adding...";
 
-      const token =
-        document.querySelector('input[name="__RequestVerificationToken"]')
-          ?.value ?? "";
-
       try {
-        for (const item of selected) {
-          const params = new URLSearchParams({
-            itemName: item.name,
-            amount: String(item.amount),
-            measurement: item.measurement,
-            __RequestVerificationToken: token,
-          });
-          await fetch("/Shopping/AddItem", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params.toString(),
-          });
-        }
+        const res = await fetch("/Shopping/AddItemsBatch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(selected.map(i => ({
+            name: i.name,
+            amount: i.amount,
+            measurement: i.measurement,
+          }))),
+        });
+        if (!res.ok) throw new Error(res.status);
         modal.style.display = "none";
         window.location.reload();
       } catch {
         status.textContent = "Something went wrong. Please try again.";
-        status.classList.add("text-danger");
         btn.textContent = "Add to Shopping List";
         btn.disabled = false;
       }

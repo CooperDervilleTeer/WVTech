@@ -10,4 +10,5 @@ public class ShoppingListViewModel
     public string? ZipCode { get; set; }
     public string? LastStoreId { get; set; }
     public bool KrogerConnected { get; set; }
+    public List<Measurement> Measurements { get; set; } = [];
 }

@@ -216,7 +216,8 @@ public class WVT165Steps
     {
         var btn = _wait.Until(d => d.FindElement(By.CssSelector(".delete-recipe-btn")));
         ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView({block:'center'});", btn);
-        btn.Click();
+        try { btn.Click(); }
+        catch (ElementClickInterceptedException) { ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", btn); }
     }
 
     [When("'Frank' clicks the delete meal button")]

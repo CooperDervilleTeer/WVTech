@@ -231,7 +231,7 @@ public class MealRepository : Repository<Meal>, IMealRepository
     {
         var userMeals = await _dbset
             .Include(m => m.Recipes)
-            .Where(m => m.UserId == user.Id)
+            .Where(m => m.UserId == user.Id && !m.IsGenerated)
             .OrderByDescending(m => m.StartTime)
             .ToListAsync();
 

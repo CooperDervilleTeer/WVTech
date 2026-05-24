@@ -50,3 +50,24 @@ Feature: selectMeal
     And 'bob' is on the select meal page
     When 'bob' clicks the remove button for the meal named 'ToBeRemoved'
     Then 'bob' does not see a meal named 'ToBeRemoved' in the select meal list
+
+  Scenario: generated meals do not appear on the select meal page
+    Given 'bob' has no previously created meals
+    And 'bob' has a generated meal named 'GeneratedLunch'
+    And 'bob' is on the select meal page
+    Then 'bob' does not see a meal named 'GeneratedLunch' in the select meal list
+
+  Scenario: manually created meals appear but generated meals do not
+    Given 'bob' has no previously created meals
+    And 'bob' has a generated meal named 'GeneratedDinner'
+    And 'bob' has a previously created meal named 'ManualBreakfast'
+    And 'bob' is on the select meal page
+    Then 'bob' sees a meal named 'ManualBreakfast' in the select meal list
+    And 'bob' does not see a meal named 'GeneratedDinner' in the select meal list
+
+  Scenario: a meal removed from the schedule still appears in the select meal list
+    Given 'bob' has no previously created meals
+    And 'bob' has a previously created meal named 'RemovedMeal'
+    And 'bob' has excluded 'RemovedMeal' from today's schedule
+    And 'bob' is on the select meal page
+    Then 'bob' sees a meal named 'RemovedMeal' in the select meal list

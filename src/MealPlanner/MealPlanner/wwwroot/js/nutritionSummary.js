@@ -332,7 +332,7 @@ function render() {
     updateCard('fat',      totals.fat,      goal.fat,      'g');
 
     // Bar chart
-    updateBarChart(isWeekly, days);
+    try { updateBarChart(isWeekly, days); } catch (e) { console.warn('Chart render failed:', e); }
 
     // Day chips (weekly only)
     const chipsRow = document.getElementById('day-chips-row');

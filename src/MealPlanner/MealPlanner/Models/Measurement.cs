@@ -12,8 +12,14 @@ public class Measurement
     public int Id { get; set; }
 
     [Required]
-    [MaxLength(32)]
+    [MaxLength(64)]
     public string Name { get; set; }
+
+    [Required]
+    [MaxLength(64)]
+    public string Abbreviation { get; set; }
+
+    public int SortOrder { get; set; }
 
     public override int GetHashCode()
     {

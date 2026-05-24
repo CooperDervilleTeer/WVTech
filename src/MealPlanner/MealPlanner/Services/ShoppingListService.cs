@@ -21,7 +21,9 @@ public class ShoppingListService : IShoppingListService
     public async Task SyncFromDateRangeAsync(string userId, User user, DateTime dateFrom, DateTime dateTo)
     {
         var meals = await _mealRepository.GetUserMealsByDateRangeWithIngredientsAsync(user, dateFrom, dateTo);
-        var ingredients = meals.SelectMany(m => m.Recipes).SelectMany(r => r.Ingredients).ToList();
+        var ingredients = meals
+            .SelectMany(m => m.Recipes.DistinctBy(r => r.Id).SelectMany(r => r.Ingredients))
+            .ToList();
         SyncFromMeals(userId, ingredients);
     }
 
@@ -30,9 +32,10 @@ public class ShoppingListService : IShoppingListService
         _shoppingListRepository.RemoveAutoAddedByUserId(userId);
 
         var manualItems = _shoppingListRepository.GetByUserId(userId).ToList();
+        var dismissed = _shoppingListRepository.GetDismissedIngredientBaseIds(userId);
 
         var grouped = ingredients
-            .GroupBy(i => (i.IngredientBase.Id, i.Measurement.Id))
+            .GroupBy(i => (IngredientNameNormalizer.NormalizeKey(i.IngredientBase.Name), i.Measurement.Id))
             .Select(g => new ShoppingListItem
             {
                 UserId = userId,
@@ -44,25 +47,36 @@ public class ShoppingListService : IShoppingListService
 
         foreach (var item in grouped)
         {
+            if (dismissed.Contains(item.IngredientBase.Id))
+                continue;
+
+            var normalizedName = IngredientNameNormalizer.NormalizeKey(item.IngredientBase.Name);
             var alreadyCovered = manualItems.Any(m =>
-                m.IngredientBaseId == item.IngredientBase.Id &&
+                string.Equals(
+                    IngredientNameNormalizer.NormalizeKey(m.IngredientBase.Name),
+                    normalizedName,
+                    StringComparison.OrdinalIgnoreCase) &&
                 m.MeasurementId == item.Measurement.Id);
             if (!alreadyCovered)
                 _shoppingListRepository.Add(item);
         }
     }
 
-    public void AddItem(string userId, string itemName, float amount, string measurement)
+    public void AddItem(string userId, string itemName, float amount, string measurement, string? displayAmount = null)
     {
         if (string.IsNullOrWhiteSpace(itemName))
             throw new ArgumentException("Item name cannot be empty.");
 
         var ingredientBase = _ingredientBaseRepo.FindOrCreateByName(itemName);
 
-        var measurementName = string.IsNullOrWhiteSpace(measurement) ? "Unit" : measurement.Trim();
-        var measurementEntity = _measurementRepo.FindOrCreate(
-            m => m.Name.ToLower() == measurementName.ToLower(),
-            () => new Measurement { Name = measurementName });
+        var trimmed = measurement.Trim();
+        var measurementEntity = _measurementRepo.ReadAll()
+            .FirstOrDefault(m => m.Name.ToLower() == trimmed.ToLower()
+                              || m.Abbreviation.ToLower() == trimmed.ToLower());
+        if (measurementEntity == null)
+            throw new ArgumentException($"Unknown measurement '{trimmed}'.");
+
+        _shoppingListRepository.UnDismiss(userId, ingredientBase.Id);
 
         var item = new ShoppingListItem
         {
@@ -70,10 +84,41 @@ public class ShoppingListService : IShoppingListService
             IngredientBase = ingredientBase,
             Measurement = measurementEntity,
             Amount = amount,
+            DisplayAmount = displayAmount,
             IsAutoAdded = false
         };
 
         _shoppingListRepository.Add(item);
+    }
+
+    public void AddItemsBatch(string userId, IEnumerable<(string name, float amount, string measurement)> items)
+    {
+        var allMeasurements = _measurementRepo.ReadAll();
+        var toAdd = new List<ShoppingListItem>();
+
+        foreach (var (name, amount, measurement) in items)
+        {
+            if (string.IsNullOrWhiteSpace(name)) continue;
+
+            var trimmed = measurement.Trim();
+            var measurementEntity = allMeasurements
+                .FirstOrDefault(m => string.Equals(m.Name, trimmed, StringComparison.OrdinalIgnoreCase)
+                                  || string.Equals(m.Abbreviation, trimmed, StringComparison.OrdinalIgnoreCase));
+            if (measurementEntity == null) continue;
+
+            var ingredientBase = _ingredientBaseRepo.FindOrCreateByName(name);
+
+            toAdd.Add(new ShoppingListItem
+            {
+                UserId = userId,
+                IngredientBase = ingredientBase,
+                Measurement = measurementEntity,
+                Amount = amount,
+                IsAutoAdded = false
+            });
+        }
+
+        _shoppingListRepository.AddBatch(toAdd);
     }
 
     public void RemoveItem(int itemId, string userId)
@@ -89,12 +134,12 @@ public class ShoppingListService : IShoppingListService
         _shoppingListRepository.RemoveAllByIngredientBase(userId, ingredientBaseId);
     }
 
-    public void UpdateItemAmount(string userId, int ingredientBaseId, float newAmount)
+    public void UpdateItemAmount(string userId, int ingredientBaseId, float newAmount, string? displayAmount = null)
     {
-        if (newAmount < 0)
-            throw new ArgumentException("Amount cannot be negative.");
+        if (newAmount <= 0)
+            throw new ArgumentException("Amount must be greater than zero.");
 
-        _shoppingListRepository.UpdateAmountByIngredientBase(userId, ingredientBaseId, newAmount);
+        _shoppingListRepository.UpdateAmountByIngredientBase(userId, ingredientBaseId, newAmount, displayAmount);
     }
 
     public void ClearItems(string userId)
@@ -102,10 +147,13 @@ public class ShoppingListService : IShoppingListService
         _shoppingListRepository.ClearAllItems(userId);
     }
 
+    public bool UpdateItemMeasurement(string userId, int itemId, int measurementId)
+    {
+        return _shoppingListRepository.UpdateMeasurementById(userId, itemId, measurementId);
+    }
+
     public IEnumerable<ShoppingListItem> GetItemsForUser(string userId)
     {
-        return _shoppingListRepository.GetByUserId(userId)
-            .OrderBy(i => i.IngredientBase.Name)
-            .ToList();
+        return _shoppingListRepository.GetByUserId(userId);
     }
 }

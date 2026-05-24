@@ -30,7 +30,7 @@ public class RecipeRepositoryTests
             Ingredient ingredient = new Ingredient
             {
                 IngredientBase = new IngredientBase { Name="test" },
-                Measurement = new Measurement { Name="Test" },
+                Measurement = new Measurement { Name="Test", Abbreviation="Test" },
                 Amount = 0
             };
             context.Add( new Recipe
@@ -314,10 +314,10 @@ public class RecipeRepositoryTests
         {
             Amount = 1,
             IngredientBase = new IngredientBase { Name = "" },
-            Measurement = new Measurement { Name = "" }
+            Measurement = new Measurement { Name = "", Abbreviation = "" }
         };
-        Recipe toAdd = new Recipe 
-        { 
+        Recipe toAdd = new Recipe
+        {
             Name = "",
             Directions = "",
             Ingredients = [ingredient]
@@ -343,7 +343,7 @@ public class RecipeRepositoryTests
         {
             Amount = 1,
             IngredientBase = new IngredientBase { Name = "" },
-            Measurement = new Measurement { Name = "" }
+            Measurement = new Measurement { Name = "", Abbreviation = "" }
         };
         Recipe toChange = context.Find<Recipe>(10);
 
@@ -368,10 +368,10 @@ public class RecipeRepositoryTests
         {
             Amount = 1,
             IngredientBase = new IngredientBase { Name = "Test2" },
-            Measurement = new Measurement { Name = "" }
+            Measurement = new Measurement { Name = "", Abbreviation = "" }
         };
-        Recipe toAdd = new Recipe 
-        { 
+        Recipe toAdd = new Recipe
+        {
             Name = "",
             Directions = "",
             Ingredients = [ingredient]
@@ -397,10 +397,10 @@ public class RecipeRepositoryTests
         {
             Amount = 1,
             IngredientBase = new IngredientBase { Name = "Test" },
-            Measurement = new Measurement { Name = "" }
+            Measurement = new Measurement { Name = "", Abbreviation = "" }
         };
-        Recipe toAdd = new Recipe 
-        { 
+        Recipe toAdd = new Recipe
+        {
             Name = "",
             Directions = "",
             Ingredients = [ingredient]
@@ -426,10 +426,10 @@ public class RecipeRepositoryTests
         {
             Amount = 1,
             IngredientBase = new IngredientBase { Name = "" },
-            Measurement = new Measurement { Name = "Test2" }
+            Measurement = new Measurement { Name = "Test2", Abbreviation = "Test2" }
         };
-        Recipe toAdd = new Recipe 
-        { 
+        Recipe toAdd = new Recipe
+        {
             Name = "",
             Directions = "",
             Ingredients = [ingredient]
@@ -455,10 +455,10 @@ public class RecipeRepositoryTests
         {
             Amount = 1,
             IngredientBase = new IngredientBase { Name = "" },
-            Measurement = new Measurement { Name = "Test" }
+            Measurement = new Measurement { Name = "Test", Abbreviation = "Test" }
         };
-        Recipe toAdd = new Recipe 
-        { 
+        Recipe toAdd = new Recipe
+        {
             Name = "",
             Directions = "",
             Ingredients = [ingredient]
@@ -485,13 +485,13 @@ public class RecipeRepositoryTests
         {
             Amount = 1,
             IngredientBase = new IngredientBase { Name = ingredientBases[0] },
-            Measurement = new Measurement { Name = measurements[0] }
+            Measurement = new Measurement { Name = measurements[0], Abbreviation = measurements[0] }
         };
         Ingredient i2 = new Ingredient
         {
             Amount = 1,
             IngredientBase = new IngredientBase { Name = ingredientBases[1] },
-            Measurement = new Measurement { Name = measurements[1] }
+            Measurement = new Measurement { Name = measurements[1], Abbreviation = measurements[1] }
         };
         Recipe toAdd = new Recipe 
         { 

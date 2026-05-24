@@ -1,7 +1,7 @@
 /* ── Page layout ─────────────────────────────────────────────── */
 .sl-page {
-    max-width: 680px;
-    margin: 20px 0 32px;
+    max-width: 860px;
+    margin: 20px auto 32px;
 }
 
 /* ── Header ──────────────────────────────────────────────────── */
@@ -19,9 +19,34 @@
     margin: 0;
 }
 
+.sl-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .sl-date-label {
     font-size: 13px;
     color: var(--text2);
+}
+
+.sl-clear-btn {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 16px;
+    border-radius: 8px;
+    background-color: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    color: #f87171;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sl-clear-btn:hover {
+    background-color: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.7);
+    color: #ef4444;
 }
 
 /* ── Alerts ──────────────────────────────────────────────────── */
@@ -30,6 +55,12 @@
     border-radius: 8px;
     font-size: 13px;
     margin-bottom: 12px;
+}
+
+.sl-alert-success {
+    background-color: rgba(20, 184, 166, 0.12);
+    color: var(--teal);
+    border: 0.5px solid rgba(20, 184, 166, 0.3);
 }
 
 .sl-alert-danger {
@@ -52,6 +83,18 @@
     margin-bottom: 16px;
 }
 
+.sl-date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.sl-clear-form {
+    margin: 0;
+    margin-left: auto;
+}
+
 .sl-date-sep {
     font-size: 13px;
     color: var(--text2);
@@ -63,16 +106,13 @@
 }
 
 /* ── Add item row ────────────────────────────────────────────── */
-.sl-add-card {
-    margin-bottom: 16px;
-}
-
 .sl-add-row {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 14px 16px;
     flex-wrap: nowrap;
+    border-bottom: 0.5px solid var(--border);
 }
 
 .sl-name-field {
@@ -117,13 +157,20 @@
     border-bottom: none;
 }
 
-.sl-item-right {
+.sl-name-area {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+}
+
+.sl-qty-area {
+    order: 2;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 0;
-    flex-shrink: 0;
     margin-left: 12px;
 }
+
 
 .sl-qty-form {
     display: flex;
@@ -138,33 +185,137 @@
 }
 
 .sl-remove-form {
+    order: 4;
     width: 28px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0;
+    margin-left: 16px;
+}
+
+.measurement-inline-input {
+    width: 130px;
+    flex-shrink: 0;
+    font-size: 13px;
+    color: var(--text2);
+    padding: 3px 8px;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    cursor: text;
+}
+
+.measurement-inline-input:focus {
+    color: var(--text1);
+}
+
+/* Thin separators between − button / input / + button */
+.sl-qty-controls .qty-decrement {
+    border-right: 0.5px solid var(--border);
+}
+
+.sl-qty-controls .qty-increment {
+    border-left: 0.5px solid var(--border);
+}
+
+.sl-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 0 24px;
+    gap: 6px;
+}
+
+.sl-empty-icon {
+    font-size: 28px;
+    color: var(--text2);
+    opacity: 0.5;
+    margin-bottom: 4px;
 }
 
 .sl-empty {
     font-size: 13px;
     color: var(--text2);
     text-align: center;
-    padding: 24px 0;
+    padding: 0;
     margin: 0;
 }
 
-/* ── Kroger card ─────────────────────────────────────────────── */
-.sl-kroger-card {
-    margin-top: 16px;
+/* ── Live validation alert (fixed toast at top) ──────────────── */
+#sl-live-alert {
+    position: fixed;
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    min-width: 300px;
+    max-width: 520px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: sl-toast-in 0.18s ease;
 }
 
+@keyframes sl-toast-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Input error highlight ───────────────────────────────────── */
+.sl-input-error {
+    border-color: #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.08) !important;
+}
+
+.sl-qty-controls:has(.sl-input-error) {
+    border-color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.06);
+}
+
+/* ── Radius slider ───────────────────────────────────────────── */
+.sl-radius-slider {
+    flex: 1;
+    accent-color: var(--teal);
+    cursor: pointer;
+    height: 4px;
+    min-width: 60px;
+}
+
+.sl-radius-label {
+    font-size: 12px;
+    color: var(--text2);
+    white-space: nowrap;
+    min-width: 38px;
+    text-align: right;
+}
+
+/* ── Kroger store panel slide animation ──────────────────────── */
+.kroger-store-panel {
+    overflow: hidden;
+}
+
+.kroger-store-panel.slide-open {
+    animation: sl-slide-open 0.25s ease both;
+}
+
+@keyframes sl-slide-open {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Kroger section (inside combined card) ───────────────────── */
 .sl-kroger-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 10px;
     padding: 14px 16px;
-    border-bottom: 0.5px solid var(--border);
+    border-top: 0.5px solid var(--border);
+}
+
+.sl-prev-exports-btn {
+    margin-left: auto;
 }
 
 .sl-kroger-title {
@@ -182,10 +333,10 @@
 }
 
 .sl-kroger-body {
-    padding: 14px 16px;
+    padding: 20px 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 18px;
 }
 
 .sl-connected-badge {
@@ -201,6 +352,17 @@
     font-style: italic;
 }
 
+.sl-kroger-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sl-field-label {
+    font-size: 13px;
+    color: var(--text2);
+}
+
 .sl-find-row {
     display: flex;
     align-items: center;
@@ -208,14 +370,21 @@
 }
 
 .sl-zip-input {
-    width: 130px;
+    width: 150px;
     flex-shrink: 0;
 }
 
 .sl-find-btn {
-    padding: 0 14px;
+    padding: 0 16px;
     height: 36px;
     white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.sl-radius-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .sl-store-msg {
@@ -227,10 +396,21 @@
 
 .sl-store-select {
     width: 100%;
-    height: auto;
-    padding: 8px 12px;
+    padding: 10px 36px 10px 12px;
     font-size: 13px;
     border-radius: 8px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a0a0a0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+[data-theme="light"] .sl-store-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666666' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
 }
 
 .sl-export-btn {

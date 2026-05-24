@@ -70,7 +70,7 @@ public class WVT158Steps
         var measurement = ctx.Set<Measurement>().FirstOrDefault(m => m.Name == "Count");
         if (measurement == null)
         {
-            measurement = new Measurement { Name = "Count" };
+            measurement = new Measurement { Name = "Count", Abbreviation = "Count" };
             ctx.Set<Measurement>().Add(measurement);
             ctx.SaveChanges();
         }

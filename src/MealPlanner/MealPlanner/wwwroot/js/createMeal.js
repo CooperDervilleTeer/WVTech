@@ -93,9 +93,12 @@ function addToSelectedCard(recipeId, recipeName) {
 function removeSelectedRecipe() {
     const recipeId = $(this).data("id");
     const $btn = $(this);
+    const $row = $btn.closest(".nm-recipe-row");
+
+    if ($row.find(".inline-confirm").length > 0) return;
 
     function doRemove() {
-        $btn.closest(".nm-recipe-row").remove();
+        $row.remove();
         $(`#createMealForm input[name="RecipeIds"][value="${recipeId}"]`).remove();
         pendingRecipeIds.delete(recipeId);
         $(`.recipeSearchRow`).each(function () {
@@ -106,11 +109,17 @@ function removeSelectedRecipe() {
         updateSelectedCard();
     }
 
-    if (typeof showDeleteModal === "function") {
-        showDeleteModal("Remove this recipe?", doRemove);
-    } else {
-        doRemove();
-    }
+    $btn.hide();
+    const $confirm = $('<span class="inline-confirm">Remove? ' +
+        '<button type="button" class="inline-confirm-yes btn btn-sm btn-danger">Yes</button> ' +
+        '<button type="button" class="inline-confirm-no btn btn-sm btn-secondary">Cancel</button>' +
+        '</span>');
+    $confirm.find(".inline-confirm-yes").on("click", doRemove);
+    $confirm.find(".inline-confirm-no").on("click", function () {
+        $confirm.remove();
+        $btn.show();
+    });
+    $row.append($confirm);
 }
 
 // ── Tag filter chips ──────────────────────────────────────────

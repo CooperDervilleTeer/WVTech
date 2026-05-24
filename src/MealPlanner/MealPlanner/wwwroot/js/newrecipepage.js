@@ -173,6 +173,24 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+function getMeasurements() {
+    const container = document.querySelector('#AppendHere');
+    try {
+        return JSON.parse(container?.dataset?.measurements || '[]');
+    } catch {
+        return [];
+    }
+}
+
+function buildMeasurementOptions() {
+    const measurements = getMeasurements();
+    const options = ['<option value="">Select</option>'];
+    for (const m of measurements) {
+        options.push(`<option value="${m.value}">${m.label}</option>`);
+    }
+    return options.join('');
+}
+
 function createInput() {
     const ingQty  = document.getElementById('ingQty');
     const ingUnit = document.getElementById('ingUnit');
@@ -228,15 +246,9 @@ function createInput() {
         inputWrapper.className = 'row input-wrapper';
         inputWrapper.innerHTML = `
             <div class="row">
-                <input type="number" class="col-1 back2-textbox-partial mx-1" name="IngredientAmounts" placeholder="0">
+                <input type="text" class="col-1 back2-textbox-partial mx-1" name="IngredientAmounts" placeholder="e.g. 1/2">
                 <select class="col-2 back2-textbox-partial mx-1" name="IngredientMeasurements">
-                    <option selected>Select</option>
-                    <option value="Count">Count</option>
-                    <option value="Cup(s)">Cup(s)</option>
-                    <option value="Ounce(s)">Ounce(s)</option>
-                    <option value="Pound(s)">Pounds</option>
-                    <option value="L">L</option>
-                    <option value="KG">KG</option>
+                    ${buildMeasurementOptions()}
                 </select>
                 <input type="text" class="col back2-textbox-partial mx-1" placeholder="Enter Ingredient" name="Ingredients" required>
             </div>`;

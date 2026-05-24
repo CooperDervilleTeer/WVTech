@@ -8,6 +8,7 @@ using MealPlanner.Services;
 using MealPlanner.ViewModels;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Data.Sqlite;
@@ -26,6 +27,7 @@ public class ShoppingControllerTests
     private Mock<IRegistrationService> _registrationServiceMock;
     private Mock<IShoppingListService> _shoppingListServiceMock;
     private Mock<IPantryService> _pantryServiceMock;
+    private Mock<UserManager<User>> _userManagerMock;
     private User _user;
 
     [SetUp]
@@ -57,12 +59,19 @@ public class ShoppingControllerTests
         _shoppingListServiceMock = new Mock<IShoppingListService>();
         _pantryServiceMock = new Mock<IPantryService>();
 
+        _userManagerMock = new Mock<UserManager<User>>(
+            Mock.Of<IUserStore<User>>(), null, null, null, null, null, null, null, null);
+        _userManagerMock
+            .Setup(m => m.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(_user);
+
         _controller = new ShoppingController(
             _shoppingListServiceMock.Object,
             _pantryServiceMock.Object,
-            null!,
+            _userManagerMock.Object,
             null!,
             _registrationServiceMock.Object,
+            Mock.Of<IMeasurementRepository>(),
             _context);
         _controller.ControllerContext = new ControllerContext
         {
@@ -160,5 +169,67 @@ public class ShoppingControllerTests
         await _controller.AddPantryItem(model);
 
         _pantryServiceMock.Verify(s => s.BuildPantryItem(It.IsAny<string>(), It.IsAny<float>(), It.IsAny<string>()), Times.Never);
+    }
+
+    // ── UpdateItemAmountJson ──────────────────────────────────────
+
+    [Test]
+    public async Task UpdateItemAmountJson_WithValidAmount_ReturnsOkAndSaves()
+    {
+        var result = await _controller.UpdateItemAmountJson(
+            new ShoppingController.UpdateAmountRequest(10, "3"));
+
+        Assert.That(result, Is.TypeOf<OkResult>());
+        _shoppingListServiceMock.Verify(s => s.UpdateItemAmount("user-1", 10, 3f, "3"), Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateItemAmountJson_WithFractionalAmount_ReturnsOkAndSaves()
+    {
+        var result = await _controller.UpdateItemAmountJson(
+            new ShoppingController.UpdateAmountRequest(10, "1 1/2"));
+
+        Assert.That(result, Is.TypeOf<OkResult>());
+        _shoppingListServiceMock.Verify(s => s.UpdateItemAmount("user-1", 10, 1.5f, "1 1/2"), Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateItemAmountJson_WithZeroAmount_ReturnsBadRequest()
+    {
+        var result = await _controller.UpdateItemAmountJson(
+            new ShoppingController.UpdateAmountRequest(10, "0"));
+
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        _shoppingListServiceMock.Verify(s => s.UpdateItemAmount(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<float>()), Times.Never);
+    }
+
+    [Test]
+    public async Task UpdateItemAmountJson_WithUnparseableAmount_ReturnsBadRequest()
+    {
+        var result = await _controller.UpdateItemAmountJson(
+            new ShoppingController.UpdateAmountRequest(10, "count"));
+
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        _shoppingListServiceMock.Verify(s => s.UpdateItemAmount(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<float>()), Times.Never);
+    }
+
+    [Test]
+    public async Task UpdateItemAmountJson_WithNegativeAmount_ReturnsBadRequest()
+    {
+        var result = await _controller.UpdateItemAmountJson(
+            new ShoppingController.UpdateAmountRequest(10, "-1"));
+
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        _shoppingListServiceMock.Verify(s => s.UpdateItemAmount(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<float>()), Times.Never);
+    }
+
+    [Test]
+    public async Task UpdateItemAmountJson_WithNullAmount_ReturnsBadRequest()
+    {
+        var result = await _controller.UpdateItemAmountJson(
+            new ShoppingController.UpdateAmountRequest(10, null!));
+
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        _shoppingListServiceMock.Verify(s => s.UpdateItemAmount(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<float>()), Times.Never);
     }
 }

@@ -11,4 +11,5 @@ public interface IRecipeRepository : IRepository<Recipe>
     public Task<List<Recipe>> GetAllWithTagsAndIngredientsAsync();
     public List<Recipe> GetRecipesByNameAndTag(string name, string tag);
     public List<Recipe> GetRecipesByNameAndRestrictions(string name, IEnumerable<string> restrictionTagNames);
+    public Task DeleteWithDependenciesAsync(Recipe recipe);
 }

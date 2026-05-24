@@ -1,7 +1,7 @@
 /* ── Page layout ─────────────────────────────────────────────── */
 .pantry-page {
-    max-width: 680px;
-    margin: 20px 0 32px;
+    max-width: 860px;
+    margin: 20px auto 32px;
     display: flex;
     flex-direction: column;
     gap: 16px;

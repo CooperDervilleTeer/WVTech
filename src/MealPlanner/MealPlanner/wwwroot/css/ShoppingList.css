@@ -1,0 +1,316 @@
+.measurement-inline-input {
+    background: var(--textbox-bg, #e0e0e0);
+    color: var(--text-primary, #333);
+    border: 1.5px solid rgba(128, 128, 128, 0.35);
+    border-radius: 50px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    font-size: 1.1rem;
+    text-align: center;
+    width: 100px;
+    padding: 6px 14px;
+    outline: none;
+    cursor: text;
+    transition: border-color 0.15s;
+}
+
+.measurement-inline-input:hover {
+    border-color: rgba(128, 128, 128, 0.6);
+}
+
+.measurement-inline-input:focus {
+    border-color: var(--button-green-bg, #4caf50);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+}
+
+.shopping-add-amount {
+    min-width: 70px;
+    width: 70px;
+    flex-shrink: 0;
+}
+
+.shopping-add-unit {
+    min-width: 110px;
+    flex-shrink: 0;
+}
+
+.shopping-add-name {
+    min-width: 150px;
+    flex: 1 1 150px;
+}
+
+.btn-inline-sm {
+    flex: 0 !important;
+    padding: 8px 20px !important;
+    border-radius: 20px;
+}
+
+.btn-inline-sm .buttonText {
+    font-size: 1rem;
+}
+
+.kroger-divider {
+    border: none;
+    border-top: 2px solid rgba(128, 128, 128, 0.2);
+    margin: 28px 0;
+}
+
+.shopping-list-grid {
+    display: grid;
+    grid-template-columns: auto 90px 1fr auto;
+    gap: 10px 20px;
+    align-items: center;
+    width: 100%;
+}
+
+.shopping-grid-header {
+    text-align: left;
+    margin: 0 0 4px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid rgba(128, 128, 128, 0.2);
+}
+
+.qty-controls {
+    display: flex;
+    align-items: center;
+    background: var(--textbox-bg, #e0e0e0);
+    border-radius: 50px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.qty-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #333);
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+}
+
+.qty-btn:hover {
+    background: var(--button-green-bg, #4caf50);
+    color: #fff;
+}
+
+.qty-btn:active {
+    filter: brightness(0.9);
+}
+
+/* ── Kroger section ── */
+
+.kroger-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.kroger-connected-badge {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.35);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.kroger-card {
+    background: var(--textbox-bg, rgba(0,0,0,0.06));
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+}
+
+.kroger-card-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    opacity: 0.55;
+    margin: 0 0 14px 0;
+    color: var(--text-primary, #333);
+}
+
+.kroger-header-btn {
+    flex: 0 0 auto !important;
+    border-radius: 20px !important;
+    padding: 0 1.6rem !important;
+    height: 42px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+#previousExportsBtn {
+    margin-left: auto;
+}
+
+.kroger-header-btn .buttonText {
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1;
+}
+
+.kroger-find-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.kroger-find-row .buttonBlueInline {
+    flex: 0 0 auto !important;
+    border-radius: 20px !important;
+    padding: 0 1.6rem !important;
+    height: 42px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.kroger-find-row .buttonBlueInline .buttonText {
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1;
+}
+
+.kroger-zip-input {
+    flex: 1;
+    max-width: 220px;
+    min-width: 120px;
+    font-size: 1rem !important;
+    height: 42px !important;
+    padding: 0 1rem !important;
+    margin: 0 !important;
+    border: 1.5px solid rgba(128, 128, 128, 0.4) !important;
+    background: var(--back1-bg, #fff) !important;
+    box-sizing: border-box !important;
+}
+
+.kroger-field-label {
+    font-size: 0.9rem;
+    color: var(--text-primary, #555);
+    white-space: nowrap;
+    min-width: 48px;
+    font-weight: 500;
+}
+
+.radius-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.radius-slider {
+    flex: 1;
+    accent-color: var(--button-blue-bg, #2196f3);
+    cursor: pointer;
+    height: 6px;
+}
+
+.kroger-radius-badge {
+    background: var(--button-blue-bg, #2196f3);
+    color: #fff;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-width: 58px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.kroger-inner-divider {
+    border: none;
+    border-top: 1px solid rgba(128, 128, 128, 0.2);
+    margin: 16px 0;
+}
+
+.kroger-store-panel {
+    overflow: hidden;
+}
+
+.kroger-store-panel.slide-open {
+    animation: kroger-slide-open 0.65s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes kroger-slide-open {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.kroger-store-message {
+    color: var(--text-primary, #555);
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    opacity: 0.8;
+}
+
+.kroger-store-select {
+    width: 100%;
+    font-size: 1rem !important;
+    height: 46px;
+    padding: 0 1rem !important;
+    margin-bottom: 16px;
+    display: block;
+    border-radius: 12px !important;
+    border: 1.5px solid rgba(128, 128, 128, 0.3) !important;
+    background: var(--back1-bg, #fff) !important;
+    color: var(--text-primary, #333) !important;
+    cursor: pointer;
+    box-shadow: none !important;
+    appearance: auto;
+}
+
+.kroger-export-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.kroger-export-row .buttonBlueInline {
+    flex: 1 1 auto !important;
+    border-radius: 20px !important;
+    padding: 0 !important;
+    height: 48px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.kroger-export-row .buttonBlueInline .buttonText {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1;
+}
+
+
+.qty-pill-input {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-align: center;
+    width: 60px;
+    font-size: 1.1rem;
+}

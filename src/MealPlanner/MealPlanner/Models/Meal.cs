@@ -31,6 +31,8 @@ public class Meal
 
     public bool IsCompleted { get; set; }
 
+    public bool IsGenerated { get; set; }
+
     public List<Recipe> Recipes { get; set; } = [];
 
     public List<Tag> GetMealTags() =>

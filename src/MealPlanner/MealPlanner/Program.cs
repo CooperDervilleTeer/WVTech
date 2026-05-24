@@ -77,6 +77,7 @@ builder.Services.AddScoped<IUserNutritionPreferenceRepository, UserNutritionPref
 builder.Services.AddScoped<IKrogerExportRepository, KrogerExportRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMealAutoRemovedIngredientRepository, MealAutoRemovedIngredientRepository>();
+builder.Services.AddScoped<IMeasurementRepository, MeasurementRepository>();
 
 // Add Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>

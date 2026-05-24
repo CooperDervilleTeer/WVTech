@@ -16,7 +16,7 @@ public class ViewModelServiceTests
             Name = "name",
             Directions = "dir",
             Ingredients = ["i1_Base", "i2_Base"],
-            IngredientAmounts = [1,1],
+            IngredientAmounts = ["1", "1"],
             IngredientMeasurements = ["i1_Measure", "i2_Measure"],
             Calories = 1,
             Protein = 2,
@@ -143,10 +143,10 @@ public class ViewModelServiceTests
             Assert.That(vm.Protein, Is.EqualTo(2));
             Assert.That(vm.Carbs, Is.EqualTo(3));
             Assert.That(vm.Fat, Is.EqualTo(4));
-            Assert.That(vm.IngredientAmounts[0], Is.EqualTo(1));
+            Assert.That(vm.IngredientAmounts[0], Is.EqualTo("1"));
             Assert.That(vm.Ingredients[0], Is.EqualTo("i1_display"));
             Assert.That(vm.IngredientMeasurements[0], Is.EqualTo("i1_measure"));
-            Assert.That(vm.IngredientAmounts[1], Is.EqualTo(2));
+            Assert.That(vm.IngredientAmounts[1], Is.EqualTo("2"));
             Assert.That(vm.Ingredients[1], Is.EqualTo("i2_display"));
             Assert.That(vm.IngredientMeasurements[1], Is.EqualTo("i2_measure"));
         }

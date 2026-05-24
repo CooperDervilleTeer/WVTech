@@ -248,7 +248,7 @@ public class MealRepositoryTests
                 {
                     DisplayName = "Lentils",
                     IngredientBase = new IngredientBase { Name = "zzz-lentil" },
-                    Measurement = new Measurement { Name = "zzz-cup" }
+                    Measurement = new Measurement { Name = "zzz-cup", Abbreviation = "zzz-cup" }
                 }
             ]
         };
@@ -366,5 +366,72 @@ public class MealRepositoryTests
         var repo = new MealRepository(context);
 
         Assert.DoesNotThrowAsync(() => repo.RemoveAllMealsWithSameTitleAsync("user-1", "Nonexistent Meal"));
+    }
+
+    // GetDistinctUserMealsAsync
+
+    [Test]
+    public async Task GetDistinctUserMealsAsync_ReturnsNonGeneratedMeals()
+    {
+        using var context = CreateContext();
+        var repo = new MealRepository(context);
+        var user = context.Users.Single();
+
+        var result = await repo.GetDistinctUserMealsAsync(user);
+
+        Assert.That(result.Any(m => m.Title == "Meal A"), Is.True);
+        Assert.That(result.Any(m => m.Title == "Meal B"), Is.True);
+        Assert.That(result.Any(m => m.Title == "Meal C"), Is.True);
+    }
+
+    [Test]
+    public async Task GetDistinctUserMealsAsync_ExcludesGeneratedMeals()
+    {
+        using var context = CreateContext();
+        context.Meals.Add(new Meal { Title = "GeneratedMeal", UserId = "user-1", StartTime = DateTime.Today, IsGenerated = true });
+        context.SaveChanges();
+        var repo = new MealRepository(context);
+        var user = context.Users.Single();
+
+        var result = await repo.GetDistinctUserMealsAsync(user);
+
+        Assert.That(result.Any(m => m.Title == "GeneratedMeal"), Is.False);
+    }
+
+    [Test]
+    public async Task GetDistinctUserMealsAsync_ReturnsOneEntryPerTitle()
+    {
+        using var seedCtx = CreateContext();
+        seedCtx.Meals.Add(new Meal { Title = "Meal A", UserId = "user-1", StartTime = DateTime.Today.AddDays(1) });
+        seedCtx.SaveChanges();
+
+        using var context = CreateContext();
+        var repo = new MealRepository(context);
+        var user = context.Users.Single();
+
+        var result = await repo.GetDistinctUserMealsAsync(user);
+
+        Assert.That(result.Count(m => m.Title == "Meal A"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task GetDistinctUserMealsAsync_DoesNotReturnOtherUsersNonGeneratedMeals()
+    {
+        using var seedCtx = CreateContext();
+        seedCtx.Users.Add(new User
+        {
+            Id = "user-2", UserName = "user-2", NormalizedUserName = "USER-2",
+            Email = "u2@test.com", NormalizedEmail = "U2@TEST.COM", SecurityStamp = "stamp2"
+        });
+        seedCtx.Meals.Add(new Meal { Title = "Other User Meal", UserId = "user-2", StartTime = DateTime.Today });
+        seedCtx.SaveChanges();
+
+        using var context = CreateContext();
+        var repo = new MealRepository(context);
+        var user = context.Users.Single(u => u.Id == "user-1");
+
+        var result = await repo.GetDistinctUserMealsAsync(user);
+
+        Assert.That(result.Any(m => m.Title == "Other User Meal"), Is.False);
     }
 }

@@ -50,7 +50,7 @@ public class KrogerControllerTests
 
         _shoppingListRepoMock = new Mock<IShoppingListRepository>();
         _shoppingListRepoMock.Setup(r => r.GetByUserId(TestUserId))
-            .Returns([new ShoppingListItem { UserId = TestUserId, IngredientBase = new IngredientBase { Name = "chicken broth" }, Amount = 2, Measurement = new Measurement { Name = "Cup(s)" } }]);
+            .Returns([new ShoppingListItem { UserId = TestUserId, IngredientBase = new IngredientBase { Name = "chicken broth" }, Amount = 2, Measurement = new Measurement { Name = "Cup(s)", Abbreviation = "cup" } }]);
 
         _shoppingListService = new ShoppingListService(_shoppingListRepoMock.Object, Mock.Of<IMealRepository>(), Mock.Of<IIngredientBaseRepository>(), Mock.Of<IRepository<Measurement>>());
 

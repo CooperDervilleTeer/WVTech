@@ -14,5 +14,7 @@ public class ShoppingListItem
 
     public float Amount { get; set; }
 
+    public string? DisplayAmount { get; set; }
+
     public bool IsAutoAdded { get; set; }
 }

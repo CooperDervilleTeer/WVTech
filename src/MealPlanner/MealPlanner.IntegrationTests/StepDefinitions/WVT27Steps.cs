@@ -170,7 +170,7 @@ public class WVT27Steps
 
         var measurementEntity = BDDSetup.Context.Set<Measurement>()
             .FirstOrDefault(m => m.Name == measurement)
-            ?? BDDSetup.Context.Set<Measurement>().Add(new Measurement { Name = measurement }).Entity;
+            ?? BDDSetup.Context.Set<Measurement>().Add(new Measurement { Name = measurement, Abbreviation = measurement }).Entity;
 
         var normalizedName = IngredientNameNormalizer.NormalizeKey(name);
         var ingredientBase = BDDSetup.Context.Set<IngredientBase>()

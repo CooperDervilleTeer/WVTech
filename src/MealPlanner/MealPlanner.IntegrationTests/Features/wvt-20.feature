@@ -56,3 +56,30 @@ Feature: WVT-20
     When 'Alice' views her shopping list
     And 'Alice' updates the quantity of 'ManualShoppingItem' to 5
     Then the shopping list shows quantity 5 for 'ManualShoppingItem'
+
+  Scenario: Shopping list updates when date range changes
+    Given 'Alice' has a meal with ingredient 'wvt20rangea' scheduled on today
+    And 'Alice' has a meal with ingredient 'wvt20rangeb' scheduled 7 days from now
+    When 'Alice' views the shopping list for today's date
+    Then the shopping list contains 'wvt20rangea'
+    And the shopping list does not contain 'wvt20rangeb'
+    When 'Alice' views the shopping list for 7 days from now
+    Then the shopping list contains 'wvt20rangeb'
+    And the shopping list does not contain 'wvt20rangea'
+    When 'Alice' views the shopping list for today's date
+    Then the shopping list contains 'wvt20rangea'
+    And the shopping list does not contain 'wvt20rangeb'
+
+  Scenario: Increment button increases a decimal quantity by 1 and keeps decimal notation
+    Given 'Alice' has 'wvt20decimal' with amount '1.5' and measurement 'Count' on the shopping list
+    When 'Alice' navigates to the shopping list
+    And 'Alice' sets the quantity display of 'wvt20decimal' to '1.5'
+    And 'Alice' clicks increment on 'wvt20decimal'
+    Then 'wvt20decimal' displays with amount '2.5' on the shopping list
+
+  Scenario: Increment button increases a fraction quantity by one step and keeps fraction notation
+    Given 'Alice' has 'wvt20fraction' with amount '0.25' and measurement 'Count' on the shopping list
+    When 'Alice' navigates to the shopping list
+    And 'Alice' sets the quantity display of 'wvt20fraction' to '1/4'
+    And 'Alice' clicks increment on 'wvt20fraction'
+    Then 'wvt20fraction' displays with amount '2/4' on the shopping list

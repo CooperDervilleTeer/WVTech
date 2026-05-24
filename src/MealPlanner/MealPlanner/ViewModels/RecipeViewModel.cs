@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using MealPlanner.Models;
+using MealPlanner.Services;
 
 namespace MealPlanner.ViewModels;
 
@@ -26,7 +27,7 @@ public class RecipeViewModel
         Name = recipe.Name;
         Id = recipe.Id;
         Ingredients = recipe.Ingredients.Select(i => i.DisplayName).ToList();
-        IngredientAmounts = recipe.Ingredients.Select(i => i.Amount).ToList();
+        IngredientAmounts = recipe.Ingredients.Select(i => FractionParser.FormatAmount(i.Amount)).ToList();
         IngredientMeasurements = recipe.Ingredients.Select(i => i.Measurement.Name).ToList();
         Directions = recipe.Directions;
         Calories = recipe.Calories;
@@ -41,7 +42,7 @@ public class RecipeViewModel
     public string Name { get; set; }
     public int? Id { get; set; }
     public List<string> Ingredients { get; set; } = [];
-    public List<float> IngredientAmounts { get; set; } = [];
+    public List<string> IngredientAmounts { get; set; } = [];
     public List<string> IngredientMeasurements { get; set; } = [];
 
     [Required(ErrorMessage = "A recipe needs directions")]
@@ -60,6 +61,7 @@ public class RecipeViewModel
     public int Fat { get; set; }
     public List<string> Tags { get; set; } = [];
     public List<string> AvailableTags { get; set; } = [];
+    public List<Measurement> Measurements { get; set; } = [];
     public bool IsOwned { get; set;} = false;
     public UserVoteType UserVote { get; set; } = UserVoteType.NoVote;
     public float? VotePercentage { get; set; }

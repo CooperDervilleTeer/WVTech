@@ -234,6 +234,24 @@ public class MealControllerTests
     }
 
     [Test]
+    public async Task GenerateMeal_SetsIsGeneratedTrue_OnCreatedMeal()
+    {
+        var vm = new CreateMealViewModel { Title = "Test", SelectedMonth = 1, SelectedDay = 1 };
+        Meal? captured = null;
+        _reccServiceMock.Setup(s => s.GetRecommendedMealsForUser(
+                It.IsAny<User>(), It.IsAny<DateTime>(), It.IsAny<DayPlanConfigViewModel>()))
+            .ReturnsAsync([new Meal { Recipes = [new Recipe()] }]);
+        _mealRepoMock.Setup(r => r.CreateOrUpdate(It.IsAny<Meal>()))
+            .Callback<Meal>(m => captured = m)
+            .Returns<Meal>(m => { m.Id = 1; return m; });
+
+        await _controller.GenerateMeal(vm);
+
+        Assert.That(captured, Is.Not.Null);
+        Assert.That(captured!.IsGenerated, Is.True);
+    }
+
+    [Test]
     public async Task SelectMeal_Get_ReturnsView_WithDistinctUserMeals()
     {
         var meals = new List<Meal>
@@ -601,6 +619,37 @@ public class MealControllerTests
         Assert.That(config.MealPreferences[0].TagIds, Is.Empty);
     }
 
+    [Test]
+    public async Task GenerateDayPlan_SetsIsGeneratedTrue_OnAllGeneratedMeals()
+    {
+        var config = new DayPlanConfigViewModel
+        {
+            MealCount = 2,
+            SelectedMonth = DateTime.Today.Month,
+            SelectedDay = DateTime.Today.Day,
+            MealPreferences =
+            [
+                new MealPreferenceViewModel { Size = MealSize.Average },
+                new MealPreferenceViewModel { Size = MealSize.Average }
+            ]
+        };
+
+        _reccServiceMock
+            .Setup(s => s.GetRecommendedMealsForUser(
+                It.IsAny<User>(), It.IsAny<DateTime>(), It.IsAny<DayPlanConfigViewModel>()))
+            .ReturnsAsync([new Meal { Title = "Lunch" }, new Meal { Title = "Dinner" }]);
+
+        var capturedMeals = new List<Meal>();
+        _mealRepoMock.Setup(r => r.CreateOrUpdate(It.IsAny<Meal>()))
+            .Callback<Meal>(m => capturedMeals.Add(m))
+            .Returns<Meal>(m => m);
+
+        await _controller.GenerateDayPlan(config);
+
+        Assert.That(capturedMeals, Is.Not.Empty);
+        Assert.That(capturedMeals.All(m => m.IsGenerated), Is.True);
+    }
+
     // RegenerateRecipe
 
     [Test]
@@ -839,5 +888,92 @@ public class MealControllerTests
         Assert.That(json, Is.Not.Null);
         var doc = JsonDocument.Parse(JsonSerializer.Serialize(json!.Value));
         Assert.That(doc.RootElement.GetProperty("restoredRecipe").GetProperty("Id").GetInt32(), Is.EqualTo(20));
+    }
+
+    // DeleteMeal
+
+    private void SetUpContextUser()
+    {
+        _context.Users.Add(new User
+        {
+            Id = "user-1",
+            UserName = "testuser",
+            NormalizedUserName = "TESTUSER",
+            Email = "test@test.com",
+            NormalizedEmail = "TEST@TEST.COM",
+            ConcurrencyStamp = "stamp",
+            SecurityStamp = "sec-stamp"
+        });
+        _context.SaveChanges();
+    }
+
+    [Test]
+    public async Task DeleteMeal_NonWeeklyMeal_KeepsMealInDatabase()
+    {
+        SetUpContextUser();
+        var meal = new Meal { UserId = "user-1", Title = "Lunch", StartTime = DateTime.Today };
+        _context.Meals.Add(meal);
+        _context.SaveChanges();
+
+        await _controller.DeleteMeal(meal.Id, DateTime.Today.ToString("yyyy-MM-dd"), "home");
+
+        Assert.That(_context.Meals.Any(m => m.Id == meal.Id), Is.True);
+    }
+
+    [Test]
+    public async Task DeleteMeal_NonWeeklyMeal_AddsDateExclusion()
+    {
+        SetUpContextUser();
+        var meal = new Meal { UserId = "user-1", Title = "Lunch", StartTime = DateTime.Today };
+        _context.Meals.Add(meal);
+        _context.SaveChanges();
+
+        await _controller.DeleteMeal(meal.Id, DateTime.Today.ToString("yyyy-MM-dd"), "home");
+
+        Assert.That(_context.MealExclusions.Any(e => e.MealId == meal.Id && e.ExclusionDate == DateTime.Today), Is.True);
+    }
+
+    [Test]
+    public async Task DeleteMeal_NonWeeklyMeal_RedirectsToHomeIndex_WhenSourceIsHome()
+    {
+        SetUpContextUser();
+        var meal = new Meal { UserId = "user-1", Title = "Lunch", StartTime = DateTime.Today };
+        _context.Meals.Add(meal);
+        _context.SaveChanges();
+
+        var result = await _controller.DeleteMeal(meal.Id, DateTime.Today.ToString("yyyy-MM-dd"), "home");
+
+        Assert.That(result, Is.TypeOf<RedirectToActionResult>());
+        var redirect = (RedirectToActionResult)result;
+        Assert.That(redirect.ActionName, Is.EqualTo("Index"));
+        Assert.That(redirect.ControllerName, Is.EqualTo("Home"));
+    }
+
+    [Test]
+    public async Task DeleteMeal_WeeklyMeal_WithDeleteAll_RemovesMealFromDatabase()
+    {
+        SetUpContextUser();
+        var meal = new Meal { UserId = "user-1", Title = "Weekly Lunch", StartTime = DateTime.Today, RepeatRule = "Weekly" };
+        _context.Meals.Add(meal);
+        _context.SaveChanges();
+        var savedId = meal.Id;
+
+        await _controller.DeleteMeal(savedId, DateTime.Today.ToString("yyyy-MM-dd"), "home", deleteAll: true);
+
+        Assert.That(_context.Meals.Any(m => m.Id == savedId), Is.False);
+    }
+
+    [Test]
+    public async Task DeleteMeal_WeeklyMeal_WithoutDeleteAll_KeepsMealAndAddsExclusion()
+    {
+        SetUpContextUser();
+        var meal = new Meal { UserId = "user-1", Title = "Weekly Lunch", StartTime = DateTime.Today, RepeatRule = "Weekly" };
+        _context.Meals.Add(meal);
+        _context.SaveChanges();
+
+        await _controller.DeleteMeal(meal.Id, DateTime.Today.ToString("yyyy-MM-dd"), "home", deleteAll: false);
+
+        Assert.That(_context.Meals.Any(m => m.Id == meal.Id), Is.True);
+        Assert.That(_context.MealExclusions.Any(e => e.MealId == meal.Id), Is.True);
     }
 }

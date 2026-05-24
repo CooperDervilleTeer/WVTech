@@ -38,10 +38,11 @@ public class KrogerController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Stores(string zipCode)
+    public async Task<IActionResult> Stores(string zipCode, int radiusInMiles = 50)
     {
         if (_krogerService == null) return Json(Array.Empty<object>());
-        return Json(await _krogerService.FindNearestStoresAsync(zipCode));
+        radiusInMiles = Math.Clamp(radiusInMiles, 1, 50);
+        return Json(await _krogerService.FindNearestStoresAsync(zipCode, radiusInMiles));
     }
 
     [HttpPost]
@@ -77,6 +78,18 @@ public class KrogerController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Challenge();
+
+        var badItems = _shoppingListService.GetItemsForUser(user.Id)
+            .Where(i => string.IsNullOrEmpty(i.Measurement.Abbreviation))
+            .Select(i => i.IngredientBase.Name)
+            .Distinct()
+            .ToList();
+
+        if (badItems.Any())
+        {
+            TempData["KrogerError"] = $"Cannot export — the following items have unrecognized measurements: {string.Join(", ", badItems)}. Edit the recipe and set valid measurements before exporting.";
+            return RedirectToAction("Index", "Shopping");
+        }
 
         await _userSettingsRepo.SaveZipCodeAsync(user.Id, zipCode);
         HttpContext.Session.SetString(SessionStoreId, storeId);
@@ -141,7 +154,7 @@ public class KrogerController : Controller
         }
 
         TempData["KrogerInfo"] = "Kroger account connected! Click Export to Kroger to add your items.";
-        return JsRedirect("/ShoppingList");
+        return JsRedirect("/Shopping");
     }
 
     private string? GetValidSessionToken()
@@ -175,7 +188,9 @@ public class KrogerController : Controller
                 return RedirectToAction("Index", "Shopping");
 
             case KrogerExportOutcome.NoMatchesFound:
-                TempData["KrogerError"] = "No matching Kroger products found for your shopping list items.";
+                TempData["KrogerError"] = result.Skipped.Count > 0
+                    ? $"Kroger could not find any matching products for: {string.Join(", ", result.Skipped)}."
+                    : "No matching Kroger products found for your shopping list items.";
                 return RedirectToAction("Index", "Shopping");
 
             case KrogerExportOutcome.Success:

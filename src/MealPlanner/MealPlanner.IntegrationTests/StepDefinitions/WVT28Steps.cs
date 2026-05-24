@@ -39,7 +39,7 @@ public class WVT28Steps
             ?? ctx.Set<IngredientBase>().Add(new IngredientBase { Name = normalizedName }).Entity;
 
         var measurement = ctx.Set<Measurement>().FirstOrDefault(m => m.Name == "Count")
-            ?? ctx.Set<Measurement>().Add(new Measurement { Name = "Count" }).Entity;
+            ?? ctx.Set<Measurement>().Add(new Measurement { Name = "Count", Abbreviation = "Count" }).Entity;
 
         ctx.SaveChanges();
 
@@ -91,7 +91,7 @@ public class WVT28Steps
             ?? ctx.Set<IngredientBase>().Add(new IngredientBase { Name = normalizedName }).Entity;
 
         var measurementEntity = ctx.Set<Measurement>().FirstOrDefault(m => m.Name == measurement)
-            ?? ctx.Set<Measurement>().Add(new Measurement { Name = measurement }).Entity;
+            ?? ctx.Set<Measurement>().Add(new Measurement { Name = measurement, Abbreviation = measurement }).Entity;
 
         ctx.SaveChanges();
 
@@ -150,7 +150,7 @@ public class WVT28Steps
         Assert.That(ingredientBase, Is.Not.Null, $"IngredientBase '{ingredientName}' not found");
 
         var measurement = ctx.Set<Measurement>().FirstOrDefault(m => m.Name == "Count")
-            ?? ctx.Set<Measurement>().Add(new Measurement { Name = "Count" }).Entity;
+            ?? ctx.Set<Measurement>().Add(new Measurement { Name = "Count", Abbreviation = "Count" }).Entity;
 
         ctx.SaveChanges();
 
@@ -288,7 +288,8 @@ public class WVT28Steps
             catch (NoSuchElementException) { return null; }
         });
         Assert.That(btn, Is.Not.Null, $"Modal button '{buttonId}' not found");
-        btn!.Click();
+        ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView(true);", btn!);
+        ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", btn!);
     }
 
     // Clicks a modal button and waits for the resulting form-submit navigation to complete.
