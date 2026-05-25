@@ -295,6 +295,7 @@ public class ShoppingController : Controller
 
         _pantryService.UpdatePantryItemAmount(ingredientId, user.Id, newAmount.Value);
         _context.SaveChanges();
+        Response.Cookies.Delete("ShoppingListSynced");
 
         return RedirectToAction(nameof(Pantry));
     }
@@ -308,6 +309,7 @@ public class ShoppingController : Controller
 
         _pantryService.RemovePantryItem(ingredientId, user.Id);
         _context.SaveChanges();
+        Response.Cookies.Delete("ShoppingListSynced");
 
         return RedirectToAction(nameof(Pantry));
     }
@@ -331,6 +333,7 @@ public class ShoppingController : Controller
         var ingredient = _pantryService.BuildPantryItem(model.Name, model.Amount, model.Measurement);
         _pantryService.AddPantryItem(user.Id, ingredient);
         _context.SaveChanges();
+        Response.Cookies.Delete("ShoppingListSynced");
 
         TempData["SuccessMessage"] = $"{model.Name} was added to your pantry.";
         return RedirectToAction(nameof(Pantry));
